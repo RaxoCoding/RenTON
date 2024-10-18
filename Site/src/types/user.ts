@@ -1,8 +1,8 @@
 export type User = {
   id: string, // UUID
 	username: string,
-	walletId: string,
-	avatar: string,
-	rating: number, // 0-5
-	telegram_handle: string | null,
+	walletAddress: string,
+	avatar: string | null,
+	rating: number | null, // 0-5
+	telegramHandle: string | null,
 };

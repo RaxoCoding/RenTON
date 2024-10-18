@@ -1,11 +1,17 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Plus, Edit, Trash2 } from 'lucide-react'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState } from "react";
+import { Plus, Edit, Eye } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -14,54 +20,31 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@/components/ui/table"
-import { Product } from '@/types/product'
-
-// Mock data for initial products
-const initialProducts: Product[] = [
-  {
-    id: '1',
-    name: 'Mountain Bike',
-    images: ['https://pedegoelectricbikes.ca/wp-content/uploads/2022/07/Pedego-Avenue-Step-Thru-in-Ocean-Teal.jpg'],
-    pricePerHour: 10,
-    cautionPrice: 200,
-    owner: 'user123',
-  },
-  {
-    id: '2',
-    name: 'City Bike',
-    images: ['https://www.rollbicycles.com/cdn/shop/products/A1_SIDE_BRG_BLK_2880x1600_0b1024fe-3bd8-4d95-8d63-8331bba972f7.png?v=1594754081'],
-    pricePerHour: 8,
-    cautionPrice: 150,
-    owner: 'user123',
-  },
-]
+} from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { Product } from "@/types/product";
+import Link from "next/link";
+import InventoryPageSkeleton from "./loading";
+import { useInventory } from "@/hooks/useInventory";
 
 export default function InventoryPage() {
-  const [products, setProducts] = useState<Product[]>(initialProducts)
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const { products, isLoading, addToInventory, updateProduct } = useInventory();
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleAddProduct = (newProduct: Omit<Product, 'id' | 'owner'>) => {
-    const product: Product = {
-      ...newProduct,
-      id: Date.now().toString(), // Generate a unique ID (use UUID in production)
-      owner: 'user123', // Hardcoded for this example
-    }
-    setProducts([...products, product])
-    setIsDialogOpen(false)
-  }
+  const handleAddProduct = (newProduct: Omit<Product, "id" | "owner">) => {
+    addToInventory({ product: newProduct });
+    setIsDialogOpen(false);
+  };
 
   const handleEditProduct = (updatedProduct: Product) => {
-    setProducts(products.map(p => p.id === updatedProduct.id ? updatedProduct : p))
-    setEditingProduct(null)
-    setIsDialogOpen(false)
+    updateProduct({ productId: updatedProduct.id, updates: updatedProduct })
+    setEditingProduct(null);
+    setIsDialogOpen(false);
+  };
+
+  if (!products || isLoading) {
+    return <InventoryPageSkeleton />
   }
 
   return (
@@ -83,89 +66,117 @@ export default function InventoryPage() {
         </Dialog>
       </div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {products.map(product => (
+        {products.map((product: Product) => (
           <Card key={product.id}>
             <CardHeader>
               <CardTitle>{product.name}</CardTitle>
             </CardHeader>
             <CardContent>
-              <img
-                src={product.images[0]}
-                alt={product.name}
-                className="w-full h-48 object-cover rounded-md mb-4"
-              />
+              {product.images && (
+                <img
+                  src={product.images[0]}
+                  alt={product.name}
+                  className="w-full h-48 object-cover rounded-md mb-4"
+                />
+              )}
+              <p className="text-sm text-gray-600 mb-4 truncate">{product.description || "No description"}</p>
               <Table>
                 <TableBody>
                   <TableRow>
                     <TableCell>Price per hour</TableCell>
-                    <TableCell className="text-right">${product.pricePerHour}</TableCell>
+                    <TableCell className="text-right">
+                      ${product.pricePerHour}
+                    </TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell>Caution price</TableCell>
-                    <TableCell className="text-right">${product.cautionPrice}</TableCell>
+                    <TableCell className="text-right">
+                      ${product.cautionPrice}
+                    </TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
             </CardContent>
             <CardFooter className="flex justify-between">
-              <Button variant="outline" onClick={() => {
-                setEditingProduct(product)
-                setIsDialogOpen(true)
-              }}>
+              <Link href={"/products/" + product.id}>
+                <Button variant="outline">
+                  <Eye className="mr-2 h-4 w-4" /> View Page
+                </Button>
+              </Link>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setEditingProduct(product);
+                  setIsDialogOpen(true);
+                }}
+              >
                 <Edit className="mr-2 h-4 w-4" /> Edit
               </Button>
             </CardFooter>
           </Card>
         ))}
       </div>
-      <Dialog open={isDialogOpen && editingProduct !== null} onOpenChange={setIsDialogOpen}>
+      <Dialog
+        open={isDialogOpen && editingProduct !== null}
+        onOpenChange={setIsDialogOpen}
+      >
         <DialogContent>
           {editingProduct && (
             <ProductForm
               product={editingProduct}
               onSubmit={handleEditProduct}
               onCancel={() => {
-                setEditingProduct(null)
-                setIsDialogOpen(false)
+                setEditingProduct(null);
+                setIsDialogOpen(false);
               }}
             />
           )}
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
 
 type ProductFormProps = {
-  product?: Product
-  onSubmit: (product: Product) => void
-  onCancel: () => void
-}
+  product?: Product;
+  onSubmit: (product: Product) => void;
+  onCancel: () => void;
+};
 
 function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
-  const [name, setName] = useState(product?.name || '')
-  const [pricePerHour, setPricePerHour] = useState(product?.pricePerHour.toString() || '')
-  const [cautionPrice, setCautionPrice] = useState(product?.cautionPrice.toString() || '')
-  const [imageUrl, setImageUrl] = useState(product?.images[0] || '')
+  const [name, setName] = useState(product?.name || "");
+  const [description, setDescription] = useState(product?.description || "");
+  const [pricePerHour, setPricePerHour] = useState(
+    product?.pricePerHour.toString() || ""
+  );
+  const [cautionPrice, setCautionPrice] = useState(
+    product?.cautionPrice.toString() || ""
+  );
+  const [imageUrl, setImageUrl] = useState(product?.images ? product.images[0] : "");
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     onSubmit({
-			id: product?.id || "",
-			owner: product?.owner || "",
+      id: product?.id || "",
+      owner: product?.owner || "",
       name,
+      description,
       images: [imageUrl],
       pricePerHour: parseFloat(pricePerHour),
       cautionPrice: parseFloat(cautionPrice),
-    })
-  }
+    });
+  };
 
   return (
     <form onSubmit={handleSubmit}>
       <DialogHeader>
-        <DialogTitle>{product ? 'Edit Product' : 'Add New Product'}</DialogTitle>
+        <DialogTitle>
+          {product ? "Edit Product" : "Add New Product"}
+        </DialogTitle>
         <DialogDescription>
-          {product ? 'Make changes to your product here.' : 'Add the details of your new product here.'}
+          {product
+            ? "Make changes to your product here."
+            : "Add the details of your new product here."}
         </DialogDescription>
       </DialogHeader>
       <div className="grid gap-4 py-4">
@@ -177,6 +188,17 @@ function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            className="col-span-3"
+          />
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="description" className="text-right">
+            Description
+          </Label>
+          <Input
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
             className="col-span-3"
           />
         </div>
@@ -220,8 +242,10 @@ function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit">{product ? 'Save changes' : 'Add product'}</Button>
+        <Button type="submit">
+          {product ? "Save changes" : "Add product"}
+        </Button>
       </DialogFooter>
     </form>
-  )
+  );
 }

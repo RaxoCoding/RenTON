@@ -3,9 +3,8 @@
 import { NavBar } from "@/components/specific/Navbar";
 import "@/styles/globals.css";
 import { TonConnectUIProvider } from "@tonconnect/ui-react";
-import {
-  TooltipProvider,
-} from "@/components/ui/tooltip"
+import { TooltipProvider } from "@/components/ui/tooltip";
+import ReactQueryProvider from "@/providers/ReactQueryProvider";
 
 export default function RootLayout({
   children,
@@ -16,14 +15,18 @@ export default function RootLayout({
     <html lang="en">
       <body className="dark">
         <TonConnectUIProvider
-          manifestUrl={"https://renton-kappa.vercel.app/tonconnect-manifest.json"}
+          manifestUrl={
+            "https://renton-kappa.vercel.app/tonconnect-manifest.json"
+          }
           actionsConfiguration={{
-            returnStrategy: "back"
+            returnStrategy: "back",
           }}
         >
           <TooltipProvider>
-            <NavBar />
-            <div className="p-5">{children}</div>
+            <ReactQueryProvider>
+              <NavBar />
+              <div className="p-5">{children}</div>
+            </ReactQueryProvider>
           </TooltipProvider>
         </TonConnectUIProvider>
       </body>

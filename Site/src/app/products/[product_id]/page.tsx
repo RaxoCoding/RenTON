@@ -1,46 +1,20 @@
-import { notFound } from "next/navigation"
+"use client"
+
 import Image from "next/image"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { StarIcon, MessageCircle, Clock, Calendar } from "lucide-react"
+import { StarIcon, MessageCircle } from "lucide-react"
+import { useProduct } from "@/hooks/useProduct"
+import ProductPageSkeleton from "./loading"
 
-// This is a mock function. In a real app, you'd fetch this data from your API or blockchain
-async function getBikeDetails(id: string) {
-  // Simulating an API call
-  await new Promise(resolve => setTimeout(resolve, 1000))
+export default function productPage({ params }: { params: { product_id: string } }) {
+  const { product } = useProduct(params.product_id);
   
-  // Mock bike data
-  return {
-    id,
-    name: "Mountain Explorer Pro",
-    images: ["/bike.jpg", "/bike.jpg"],
-    pricePerHour: 15,
-    cautionPrice: 250,
-    owner: {
-      id: "owner123",
-      username: "bikeEnthusiast",
-      avatar: "/placeholder.svg?height=50&width=50",
-      rating: 4.7,
-      telegramHandle: "@bikeEnthusiast"
-    },
-    description: "A high-performance mountain bike perfect for rough terrains and adventurous trails. Features 21-speed gears, front suspension, and durable tires.",
-    features: ["21-speed gears", "Front suspension", "Disc brakes", "29-inch wheels"],
-    rentalHistory: [
-      { id: "rent1", renter: "Alex", date: "2023-06-15", duration: "3 hours" },
-      { id: "rent2", renter: "Sam", date: "2023-06-20", duration: "5 hours" },
-      { id: "rent3", renter: "Jordan", date: "2023-06-25", duration: "2 hours" },
-    ]
-  }
-}
-
-export default async function BikePage({ params }: { params: { bike_id: string } }) {
-  const bike = await getBikeDetails(params.bike_id)
-  
-  if (!bike) {
-    notFound()
+  if (!product) {
+    return <ProductPageSkeleton />
   }
 
   return (
@@ -49,18 +23,18 @@ export default async function BikePage({ params }: { params: { bike_id: string }
         <div>
           <div className="relative aspect-video mb-4">
             <Image
-              src={bike.images[0]}
-              alt={bike.name}
+              src={product.images[0]}
+              alt={product.name}
               fill
               className="rounded-lg object-cover"
             />
           </div>
           <div className="grid grid-cols-4 gap-2">
-            {bike.images.map((img, index) => (
+            {product.images.map((img: string, index: number) => (
               <div key={index} className="relative aspect-square">
                 <Image
                   src={img}
-                  alt={`${bike.name} - view ${index + 1}`}
+                  alt={`${product.name} - view ${index + 1}`}
                   fill
                   className="rounded-md object-cover"
                 />
@@ -69,54 +43,42 @@ export default async function BikePage({ params }: { params: { bike_id: string }
           </div>
         </div>
         <div>
-          <h1 className="text-3xl font-bold mb-2">{bike.name}</h1>
+          <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
           <div className="flex items-center mb-4">
             <Badge variant="secondary" className="mr-2">
-              ${bike.pricePerHour}/hour
+              ${product.pricePerHour}/hour
             </Badge>
             <Badge variant="outline">
-              ${bike.cautionPrice} caution
+              ${product.cautionPrice} caution
             </Badge>
           </div>
-          <p className="text-muted-foreground mb-4">{bike.description}</p>
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Features</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="list-disc pl-5">
-                {bike.features.map((feature, index) => (
-                  <li key={index}>{feature}</li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+          <p className="text-muted-foreground mb-4">{product.description}</p>
           <Card>
             <CardHeader>
               <CardTitle>Owner</CardTitle>
             </CardHeader>
             <CardContent className="flex items-center">
               <Avatar className="h-12 w-12 mr-4">
-                <AvatarImage src={bike.owner.avatar} alt={bike.owner.username} />
-                <AvatarFallback>{bike.owner.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                <AvatarImage src={product.owner.avatar} alt={product.owner.username} />
+                <AvatarFallback>{product.owner.username.slice(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="font-semibold">{bike.owner.username}</h3>
+                <h3 className="font-semibold">{product.owner.username}</h3>
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
                     <StarIcon
                       key={i}
                       className={`h-4 w-4 ${
-                        i < Math.floor(bike.owner.rating) ? "text-yellow-400" : "text-gray-300"
+                        i < Math.floor(product.owner.rating) ? "text-yellow-400" : "text-gray-300"
                       }`}
-                      fill={i < Math.floor(bike.owner.rating) ? "currentColor" : "none"}
+                      fill={i < Math.floor(product.owner.rating) ? "currentColor" : "none"}
                     />
                   ))}
-                  <span className="ml-2 text-sm text-muted-foreground">{bike.owner.rating.toFixed(1)}</span>
+                  <span className="ml-2 text-sm text-muted-foreground">{product.owner.rating.toFixed(1)}</span>
                 </div>
               </div>
             </CardContent>
-            {bike.owner.telegramHandle && (
+            {product.owner.telegramHandle && (
               <CardFooter>
                 <Button variant="outline" className="w-full">
                   <MessageCircle className="mr-2 h-4 w-4" />
@@ -128,14 +90,14 @@ export default async function BikePage({ params }: { params: { bike_id: string }
         </div>
       </div>
       <Separator className="my-8" />
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Rental History</CardTitle>
-          <CardDescription>Recent rentals of this bike</CardDescription>
+          <CardDescription>Recent rentals of this product</CardDescription>
         </CardHeader>
         <CardContent>
           <ul className="space-y-4">
-            {bike.rentalHistory.map((rental) => (
+            {product.rentalHistory.map((rental) => (
               <li key={rental.id} className="flex items-center justify-between">
                 <div className="flex items-center">
                   <Avatar className="h-8 w-8 mr-3">
@@ -153,10 +115,10 @@ export default async function BikePage({ params }: { params: { bike_id: string }
             ))}
           </ul>
         </CardContent>
-      </Card>
+      </Card> */}
       <div className="mt-8 text-center">
         <Button size="lg">
-          Rent This Bike
+          Rent This Product
         </Button>
       </div>
     </div>

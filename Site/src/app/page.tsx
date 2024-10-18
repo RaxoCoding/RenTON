@@ -2,122 +2,18 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-
-// import { Product } from "@/types/product"
-
-// liste de products
-const listProducts = [
-  {
-    id: "1",
-    name: "Laser Lemonade Machine",
-    images: ["/bike.jpg"],
-    cautionPrice: 499.99,
-    pricePerHour: 5.99,
-    owner: "1",
-  },
-  {
-    id: "2",
-    name: "Hypernova Headphones",
-    images: ["/bike.jpg"],
-    cautionPrice: 129.99,
-    pricePerHour: 5.99,
-    owner: "1",
-  },
-  {
-    id: "3",
-    name: "AeroGlow Desk Lamp",
-    images: ["/bike.jpg"],
-    cautionPrice: 39.99,
-    pricePerHour: 5.99,
-    owner: "1",
-  },
-  {
-    id: "4",
-    name: "TechTonic Energy Drink",
-    images: ["/bike.jpg"],
-    cautionPrice: 2.99,
-    pricePerHour: 5.99,
-    owner: "1",
-  },
-  {
-    id: "5",
-    name: "Gamer Gear Pro Controller",
-    images: ["/bike.jpg"],
-    cautionPrice: 59.99,
-    pricePerHour: 5.99,
-    owner: "1",
-  },
-  {
-    id: "6",
-    name: "Luminous VR Headset",
-    images: ["/bike.jpg"],
-    cautionPrice: 199.99,
-    pricePerHour: 5.99,
-    owner: "1",
-  },
-  {
-    id: "12",
-    name: "Laser Lemonade Machine",
-    images: ["/bike.jpg"],
-    cautionPrice: 499.99,
-    pricePerHour: 5.99,
-    owner: "1",
-  },
-  {
-    id: "22",
-    name: "Hypernova Headphones",
-    images: ["/bike.jpg"],
-    cautionPrice: 129.99,
-    pricePerHour: 5.99,
-    owner: "1",
-  },
-  {
-    id: "32",
-    name: "AeroGlow Desk Lamp",
-    images: ["/bike.jpg"],
-    cautionPrice: 39.99,
-    pricePerHour: 5.99,
-    owner: "1",
-  },
-  {
-    id: "42",
-    name: "TechTonic Energy Drink",
-    images: ["/bike.jpg"],
-    cautionPrice: 2.99,
-    pricePerHour: 5.99,
-    owner: "1",
-  },
-  {
-    id: "52",
-    name: "Gamer Gear Pro Controller",
-    images: ["/bike.jpg"],
-    cautionPrice: 59.99,
-    pricePerHour: 5.99,
-    owner: "1",
-  },
-  {
-    id: "62",
-    name: "Luminous VR Headset",
-    images: ["/bike.jpg"],
-    cautionPrice: 199.99,
-    pricePerHour: 5.99,
-    owner: "1",
-  },
-];
+import { useProducts } from "@/hooks/useProducts";
+import HomePageSkeleton from "./loading";
+import { Product } from "@/types/product";
 
 export default function Home() {
+  const { products, isLoading } = useProducts();
   const [filters, setFilters] = useState({
     name: "",
     owner: "",
@@ -125,9 +21,14 @@ export default function Home() {
     maxCautionPrice: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
 
-  const filteredProducts = listProducts.filter((product) => {
+  if (isLoading || !products) {
+    return <HomePageSkeleton />;
+  }
+
+  const itemsPerPage = 10;
+
+  const filteredProducts = products.filter((product: Product) => {
     return (
       product.name.toLowerCase().includes(filters.name.toLowerCase()) &&
       product.owner.toLowerCase().includes(filters.owner.toLowerCase()) &&
@@ -201,7 +102,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-6">
-            {paginatedProducts.map((product) => (
+            {paginatedProducts.map((product: Product) => (
               <Link href={"/products/" + product.id}>
                 <Card key={product.id} className="overflow-hidden">
                   <CardHeader className="p-0">
@@ -210,7 +111,7 @@ export default function Home() {
                       style={{ paddingBottom: "100%" }}
                     >
                       <Image
-                        src={product.images[0]}
+                        src={product.images ? product.images[0] : ""}
                         alt={product.name}
                         layout="fill"
                         objectFit="cover"
