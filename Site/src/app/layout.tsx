@@ -16,7 +16,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="dark">
         <TonConnectUIProvider
-          manifestUrl={window.origin + "/tonconnect-manifest.json"}
+          manifestUrl={"https://renton-kappa.vercel.app/tonconnect-manifest.json"}
         >
           <TooltipProvider>
             <NavBar />
