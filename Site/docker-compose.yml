@@ -1,0 +1,14 @@
+services:
+  nextjs:
+    build:
+      context: .   # Utiliser le Dockerfile dans le répertoire actuel
+    container_name: nextjs-app
+    working_dir: /app
+    volumes:
+      - ./:/app    # Monter les fichiers du projet dans le conteneur
+    ports:
+      - '3000:3000'  # Mapper le port 3000 du conteneur vers l'hôte
+    environment:
+      NODE_ENV: development
+    stdin_open: true  # Pour les sessions interactives
+    tty: true         # Pour garder le terminal ouvert
