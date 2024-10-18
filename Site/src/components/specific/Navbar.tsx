@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { TonConnectButton } from "@tonconnect/ui-react";
+import { WalletConnectButton } from "./WalletConnectButton";
 
 export function NavBar() {
   return (
@@ -13,7 +13,7 @@ export function NavBar() {
           </Link>
         </div>
         <div className="md:flex items-center gap-4">
-          <TonConnectButton />
+          <WalletConnectButton />
         </div>
       </div>
     </nav>
