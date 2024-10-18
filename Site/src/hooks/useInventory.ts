@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
 import { Product } from "@/types/product";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTonAddress } from "@tonconnect/ui-react";
 
-let inventoryMock: Product[] = [
+const inventoryMock: Product[] = [
   {
     id: "1",
     name: "Mountain Bike",
     images: [
-      "https://pedegoelectricbikes.ca/wp-content/uploads/2022/07/Pedego-Avenue-Step-Thru-in-Ocean-Teal.jpg",
+      "/bike.jpg",
     ],
     pricePerHour: 10,
     cautionPrice: 200,
@@ -20,11 +20,12 @@ let inventoryMock: Product[] = [
     id: "2",
     name: "City Bike",
     images: [
-      "https://www.rollbicycles.com/cdn/shop/products/A1_SIDE_BRG_BLK_2880x1600_0b1024fe-3bd8-4d95-8d63-8331bba972f7.png?v=1594754081",
+      "/bike.jpg",
     ],
     pricePerHour: 8,
     cautionPrice: 150,
     owner: "user123",
+		description: null
   },
 ];
 
@@ -62,15 +63,25 @@ export function useInventory() {
     mutationFn: async ({ productId, updates }: updateProductVariables) => {
       if (!walletAddress) throw new Error("Not authenticated!");
 
-      let productIdx = inventoryMock.findIndex((x) => x.id === productId);
+      const productIdx = inventoryMock.findIndex((x) => x.id === productId);
 
       if (!productIdx) throw new Error("Product does not exist!");
 
-			updates.name && (inventoryMock[productIdx].name = updates.name);
-			updates.description && (inventoryMock[productIdx].description = updates.description);
-			updates.images && (inventoryMock[productIdx].images = updates.images);
-			updates.pricePerHour && (inventoryMock[productIdx].pricePerHour = updates.pricePerHour);
-			updates.cautionPrice && (inventoryMock[productIdx].cautionPrice = updates.cautionPrice);
+      if (updates.name) {
+        inventoryMock[productIdx].name = updates.name;
+      }
+      if (updates.description) {
+        inventoryMock[productIdx].description = updates.description;
+      }
+      if (updates.images) {
+        inventoryMock[productIdx].images = updates.images;
+      }
+      if (updates.pricePerHour) {
+        inventoryMock[productIdx].pricePerHour = updates.pricePerHour;
+      }
+      if (updates.cautionPrice) {
+        inventoryMock[productIdx].cautionPrice = updates.cautionPrice;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
@@ -91,8 +102,8 @@ export function useInventory() {
     error,
     isLoading: isLoading,
     addToInventory: addToInventory.mutate,
-    isAddingToInventory: addToInventory.isLoading,
-		updateProduct: updateProduct.mutate,
-		isUpdatingProduct: updateProduct.isLoading
+    isAddingToInventory: addToInventory.isPending,
+    updateProduct: updateProduct.mutate,
+    isUpdatingProduct: updateProduct.isPending,
   };
 }

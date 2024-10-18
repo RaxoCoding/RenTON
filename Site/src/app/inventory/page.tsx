@@ -26,6 +26,7 @@ import { Product } from "@/types/product";
 import Link from "next/link";
 import InventoryPageSkeleton from "./loading";
 import { useInventory } from "@/hooks/useInventory";
+import Image from "next/image";
 
 export default function InventoryPage() {
   const { products, isLoading, addToInventory, updateProduct } = useInventory();
@@ -38,13 +39,13 @@ export default function InventoryPage() {
   };
 
   const handleEditProduct = (updatedProduct: Product) => {
-    updateProduct({ productId: updatedProduct.id, updates: updatedProduct })
+    updateProduct({ productId: updatedProduct.id, updates: updatedProduct });
     setEditingProduct(null);
     setIsDialogOpen(false);
   };
 
   if (!products || isLoading) {
-    return <InventoryPageSkeleton />
+    return <InventoryPageSkeleton />;
   }
 
   return (
@@ -72,14 +73,17 @@ export default function InventoryPage() {
               <CardTitle>{product.name}</CardTitle>
             </CardHeader>
             <CardContent>
-              {product.images && (
-                <img
+              <div className="relative aspect-square mb-4">
+                <Image
                   src={product.images[0]}
                   alt={product.name}
-                  className="w-full h-48 object-cover rounded-md mb-4"
+                  fill
+                  className="object-cover rounded-md"
                 />
-              )}
-              <p className="text-sm text-gray-600 mb-4 truncate">{product.description || "No description"}</p>
+              </div>
+              <p className="text-sm text-gray-600 mb-4 truncate">
+                {product.description || "No description"}
+              </p>
               <Table>
                 <TableBody>
                   <TableRow>
@@ -152,7 +156,7 @@ function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [cautionPrice, setCautionPrice] = useState(
     product?.cautionPrice.toString() || ""
   );
-  const [imageUrl, setImageUrl] = useState(product?.images ? product.images[0] : "");
+  const [imageUrl, setImageUrl] = useState(product?.images[0] || "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

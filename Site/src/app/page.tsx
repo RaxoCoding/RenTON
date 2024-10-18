@@ -103,15 +103,15 @@ export default function Home() {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-6">
             {paginatedProducts.map((product: Product) => (
-              <Link href={"/products/" + product.id}>
-                <Card key={product.id} className="overflow-hidden">
+              <Link href={"/products/" + product.id} key={product.id}>
+                <Card className="overflow-hidden">
                   <CardHeader className="p-0">
                     <div
                       className="relative w-full"
                       style={{ paddingBottom: "100%" }}
                     >
                       <Image
-                        src={product.images ? product.images[0] : ""}
+                        src={product.images[0]}
                         alt={product.name}
                         layout="fill"
                         objectFit="cover"

@@ -11,7 +11,7 @@ import { StarIcon } from "lucide-react";
 import { useUser } from "@/hooks/useUser";
 import UserProfileSkeleton from "./loading";
 
-export default async function UserProfile({
+export default function UserProfile({
   params,
 }: {
   params: { wallet_id: string };
@@ -27,7 +27,7 @@ export default async function UserProfile({
       <Card>
         <CardHeader className="flex flex-row items-center gap-4">
           <Avatar className="h-20 w-20">
-            <AvatarImage src={user.avatar || ""} alt={user.username} />
+            <AvatarImage src={user.avatar || undefined} alt={user.username} />
             <AvatarFallback>
               {user.username.slice(0, 2).toUpperCase()}
             </AvatarFallback>

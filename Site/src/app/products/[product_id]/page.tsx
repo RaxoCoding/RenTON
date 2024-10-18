@@ -10,7 +10,7 @@ import { StarIcon, MessageCircle } from "lucide-react"
 import { useProduct } from "@/hooks/useProduct"
 import ProductPageSkeleton from "./loading"
 
-export default function productPage({ params }: { params: { product_id: string } }) {
+export default function ProductPage({ params }: { params: { product_id: string } }) {
   const { product } = useProduct(params.product_id);
   
   if (!product) {
@@ -59,7 +59,7 @@ export default function productPage({ params }: { params: { product_id: string }
             </CardHeader>
             <CardContent className="flex items-center">
               <Avatar className="h-12 w-12 mr-4">
-                <AvatarImage src={product.owner.avatar} alt={product.owner.username} />
+                <AvatarImage src={product.owner.avatar || undefined } alt={product.owner.username} />
                 <AvatarFallback>{product.owner.username.slice(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div>
@@ -69,12 +69,12 @@ export default function productPage({ params }: { params: { product_id: string }
                     <StarIcon
                       key={i}
                       className={`h-4 w-4 ${
-                        i < Math.floor(product.owner.rating) ? "text-yellow-400" : "text-gray-300"
+                        product.owner.rating && i < Math.floor(product.owner.rating) ? "text-yellow-400" : "text-gray-300"
                       }`}
-                      fill={i < Math.floor(product.owner.rating) ? "currentColor" : "none"}
+                      fill={product.owner.rating && i < Math.floor(product.owner.rating) ? "currentColor" : "none"}
                     />
                   ))}
-                  <span className="ml-2 text-sm text-muted-foreground">{product.owner.rating.toFixed(1)}</span>
+                  <span className="ml-2 text-sm text-muted-foreground">{product.owner.rating ? product.owner.rating.toFixed(1) : "No Ratings"}</span>
                 </div>
               </div>
             </CardContent>

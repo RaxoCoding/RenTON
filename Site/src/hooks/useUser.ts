@@ -1,10 +1,7 @@
 "use client"
 
-import { Product } from "@/types/product";
 import { User } from "@/types/user";
 import { useQuery } from "@tanstack/react-query";
-
-type FullProduct = Omit<Product, "owner"> & { owner: User };
 
 const userMock = {
   id: "123e4567-e89b-12d3-a456-426614174000",
@@ -24,7 +21,7 @@ export function useUser(walletAddress: string) {
     data: user,
     error,
     isLoading,
-  } = useQuery<FullProduct | null, Error>({
+  } = useQuery<User | null, Error>({
     queryKey: ["user", walletAddress],
     queryFn: fetchUser,
   });

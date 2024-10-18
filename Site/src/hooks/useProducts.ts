@@ -18,6 +18,7 @@ const productsMock = [
     cautionPrice: 129.99,
     pricePerHour: 5.99,
     owner: "1",
+		description: null
   },
   {
     id: "3",
@@ -26,6 +27,7 @@ const productsMock = [
     cautionPrice: 39.99,
     pricePerHour: 5.99,
     owner: "1",
+		description: null
   },
   {
     id: "4",
@@ -34,6 +36,7 @@ const productsMock = [
     cautionPrice: 2.99,
     pricePerHour: 5.99,
     owner: "1",
+		description: null
   },
   {
     id: "5",
@@ -42,6 +45,7 @@ const productsMock = [
     cautionPrice: 59.99,
     pricePerHour: 5.99,
     owner: "1",
+		description: null
   },
   {
     id: "6",
@@ -50,6 +54,7 @@ const productsMock = [
     cautionPrice: 199.99,
     pricePerHour: 5.99,
     owner: "1",
+		description: null
   },
   {
     id: "12",
@@ -58,6 +63,7 @@ const productsMock = [
     cautionPrice: 499.99,
     pricePerHour: 5.99,
     owner: "1",
+		description: null
   },
   {
     id: "22",
@@ -66,6 +72,7 @@ const productsMock = [
     cautionPrice: 129.99,
     pricePerHour: 5.99,
     owner: "1",
+		description: null
   },
   {
     id: "32",
@@ -74,6 +81,7 @@ const productsMock = [
     cautionPrice: 39.99,
     pricePerHour: 5.99,
     owner: "1",
+		description: null
   },
   {
     id: "42",
@@ -82,6 +90,7 @@ const productsMock = [
     cautionPrice: 2.99,
     pricePerHour: 5.99,
     owner: "1",
+		description: null
   },
   {
     id: "52",
@@ -90,6 +99,7 @@ const productsMock = [
     cautionPrice: 59.99,
     pricePerHour: 5.99,
     owner: "1",
+		description: null
   },
   {
     id: "62",
@@ -98,6 +108,7 @@ const productsMock = [
     cautionPrice: 199.99,
     pricePerHour: 5.99,
     owner: "1",
+		description: null
   },
 ];
 
