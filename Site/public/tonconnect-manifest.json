@@ -1,5 +1,5 @@
 {
-	"url": "http://localhost:3000",
+	"url": "https://renton-kappa.vercel.app",
 	"name": "ReTON",                     
 	"iconUrl": "https://ton.vote/logo.png"
 }

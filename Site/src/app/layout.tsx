@@ -16,10 +16,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="dark">
         <TonConnectUIProvider
-          manifestUrl="http://localhost:3000/tonconnect-manifest.json"
-          actionsConfiguration={{
-            returnStrategy: "https://localhost:3000/",
-          }}
+          manifestUrl={window.origin + "/tonconnect-manifest.json"}
         >
           <TooltipProvider>
             <NavBar />
