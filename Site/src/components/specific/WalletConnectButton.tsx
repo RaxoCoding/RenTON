@@ -66,7 +66,7 @@ export function WalletConnectButton() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={handleDisconnect}>
+        <DropdownMenuItem onClick={handleDisconnect} className="cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" /> Logout
         </DropdownMenuItem>
       </DropdownMenuContent>
