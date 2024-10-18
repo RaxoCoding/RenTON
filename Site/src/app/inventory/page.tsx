@@ -28,7 +28,7 @@ const initialProducts: Product[] = [
   {
     id: '1',
     name: 'Mountain Bike',
-    images: ['/placeholder.svg?height=100&width=100'],
+    images: ['https://pedegoelectricbikes.ca/wp-content/uploads/2022/07/Pedego-Avenue-Step-Thru-in-Ocean-Teal.jpg'],
     pricePerHour: 10,
     cautionPrice: 200,
     owner: 'user123',
@@ -36,7 +36,7 @@ const initialProducts: Product[] = [
   {
     id: '2',
     name: 'City Bike',
-    images: ['/placeholder.svg?height=100&width=100'],
+    images: ['https://www.rollbicycles.com/cdn/shop/products/A1_SIDE_BRG_BLK_2880x1600_0b1024fe-3bd8-4d95-8d63-8331bba972f7.png?v=1594754081'],
     pricePerHour: 8,
     cautionPrice: 150,
     owner: 'user123',
