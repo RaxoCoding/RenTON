@@ -1,61 +1,13 @@
-import Image from "next/image"
-import Link from "next/link"
-import {
-  LineChart,
-  ListFilter,
-  MoreHorizontal,
-  Package,
-  Package2,
-  PanelLeft,
-  PlusCircle,
-  Search,
-  ShoppingCart,
-  Users2,
-} from "lucide-react"
+"use client"
 
+import { useState } from "react"
+import Image from "next/image"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+
 
 // import { Product } from "@/types/product"
 
@@ -64,7 +16,7 @@ const listProducts = [
   {
     id: "1",
     name: "Laser Lemonade Machine",
-    images: ["/placeholder.svg"],
+    images: ["/bike.jpg"],
     cautionPrice: 499.99,
     pricePerHour: 5.99,
     owner: "1",
@@ -72,7 +24,7 @@ const listProducts = [
   {
     id: "2",
     name: "Hypernova Headphones",
-    images: ["/placeholder.svg"],
+    images: ["/bike.jpg"],
     cautionPrice: 129.99,
     pricePerHour: 5.99,
     owner: "1",
@@ -80,7 +32,7 @@ const listProducts = [
   {
     id: "3",
     name: "AeroGlow Desk Lamp",
-    images: ["/placeholder.svg"],
+    images: ["/bike.jpg"],
     cautionPrice: 39.99,
     pricePerHour: 5.99,
     owner: "1",
@@ -88,7 +40,7 @@ const listProducts = [
   {
     id: "4",
     name: "TechTonic Energy Drink",
-    images: ["/placeholder.svg"],
+    images: ["/bike.jpg"],
     cautionPrice: 2.99,
     pricePerHour: 5.99,
     owner: "1",
@@ -96,7 +48,7 @@ const listProducts = [
   {
     id: "5",
     name: "Gamer Gear Pro Controller",
-    images: ["/placeholder.svg"],
+    images: ["/bike.jpg"],
     cautionPrice: 59.99,
     pricePerHour: 5.99,
     owner: "1",
@@ -104,7 +56,55 @@ const listProducts = [
   {
     id: "6",
     name: "Luminous VR Headset",
-    images: ["/placeholder.svg"],
+    images: ["/bike.jpg"],
+    cautionPrice: 199.99,
+    pricePerHour: 5.99,
+    owner: "1",
+  },
+  {
+    id: "12",
+    name: "Laser Lemonade Machine",
+    images: ["/bike.jpg"],
+    cautionPrice: 499.99,
+    pricePerHour: 5.99,
+    owner: "1",
+  },
+  {
+    id: "22",
+    name: "Hypernova Headphones",
+    images: ["/bike.jpg"],
+    cautionPrice: 129.99,
+    pricePerHour: 5.99,
+    owner: "1",
+  },
+  {
+    id: "32",
+    name: "AeroGlow Desk Lamp",
+    images: ["/bike.jpg"],
+    cautionPrice: 39.99,
+    pricePerHour: 5.99,
+    owner: "1",
+  },
+  {
+    id: "42",
+    name: "TechTonic Energy Drink",
+    images: ["/bike.jpg"],
+    cautionPrice: 2.99,
+    pricePerHour: 5.99,
+    owner: "1",
+  },
+  {
+    id: "52",
+    name: "Gamer Gear Pro Controller",
+    images: ["/bike.jpg"],
+    cautionPrice: 59.99,
+    pricePerHour: 5.99,
+    owner: "1",
+  },
+  {
+    id: "62",
+    name: "Luminous VR Headset",
+    images: ["/bike.jpg"],
     cautionPrice: 199.99,
     pricePerHour: 5.99,
     owner: "1",
@@ -112,216 +112,115 @@ const listProducts = [
 ]
 
 
+
 export default function Home() {
+
+  const [filters, setFilters] = useState({
+    name: "",
+    owner: "",
+    maxPricePerHour: "",
+    maxCautionPrice: "",
+  })
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 8
+
+  const filteredProducts = listProducts.filter((product) => {
+    return (
+      product.name.toLowerCase().includes(filters.name.toLowerCase()) &&
+      product.owner.toLowerCase().includes(filters.owner.toLowerCase()) &&
+      (filters.maxPricePerHour === "" || product.pricePerHour <= parseFloat(filters.maxPricePerHour)) &&
+      (filters.maxCautionPrice === "" || product.cautionPrice <= parseFloat(filters.maxCautionPrice))
+    )
+  })
+
+  const pageCount = Math.ceil(filteredProducts.length / itemsPerPage)
+  const paginatedProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilters({ ...filters, [e.target.name]: e.target.value })
+    setCurrentPage(1)
+  }
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
+      <div className="flex flex-col sm:gap-4 sm:py-4 px-8">
+      <div className="container mx-auto py-8">
+      <h1 className="text-4xl font-bold mb-8">Rent a Bike</h1>
 
-      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button size="icon" variant="outline" className="sm:hidden">
-                <PanelLeft className="h-5 w-5" />
-                <span className="sr-only">Toggle Menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="sm:max-w-xs">
-              <nav className="grid gap-6 text-lg font-medium">
-                <Link
-                  href="#"
-                  className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
-                >
-                  <Package2 className="h-5 w-5 transition-all group-hover:scale-110" />
-                  <span className="sr-only">Acme Inc</span>
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                >
-                  {/* <Home className="h-5 w-5" /> */}
-                  Dashboard
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                  Orders
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-4 px-2.5 text-foreground"
-                >
-                  <Package className="h-5 w-5" />
-                  Products
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                >
-                  <Users2 className="h-5 w-5" />
-                  Customers
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                >
-                  <LineChart className="h-5 w-5" />
-                  Settings
-                </Link>
-              </nav>
-            </SheetContent>
-          </Sheet>
-          <Breadcrumb className="hidden md:flex">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href="#">Dashboard</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href="#">Products</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>All Products</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-          <div className="relative ml-auto flex-1 md:grow-0">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]"
-            />
-          </div>
-        </header>
-        <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-          <Tabs defaultValue="all">
-            <div className="flex items-center">
-              <TabsList>
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="active">Active</TabsTrigger>
-                <TabsTrigger value="draft">Draft</TabsTrigger>
-                <TabsTrigger value="archived" className="hidden sm:flex">
-                  Archived
-                </TabsTrigger>
-              </TabsList>
-              <div className="ml-auto flex items-center gap-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-8 gap-1">
-                      <ListFilter className="h-3.5 w-3.5" />
-                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Filter
-                      </span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuCheckboxItem checked>
-                      Active
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem>Draft</DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem>
-                      Archived
-                    </DropdownMenuCheckboxItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div>
+          <Label htmlFor="name">Bike Name</Label>
+          <Input id="name" name="name" value={filters.name} onChange={handleFilterChange} placeholder="Filter by name" />
+        </div>
+        <div>
+          <Label htmlFor="owner">Owner</Label>
+          <Input id="owner" name="owner" value={filters.owner} onChange={handleFilterChange} placeholder="Filter by owner" />
+        </div>
+        <div>
+          <Label htmlFor="maxPricePerHour">Max Price per Hour</Label>
+          <Input id="maxPricePerHour" name="maxPricePerHour" type="number" value={filters.maxPricePerHour} onChange={handleFilterChange} placeholder="Max price per hour" />
+        </div>
+        <div>
+          <Label htmlFor="maxCautionPrice">Max Caution Price</Label>
+          <Input id="maxCautionPrice" name="maxCautionPrice" type="number" value={filters.maxCautionPrice} onChange={handleFilterChange} placeholder="Max caution price" />
+        </div>
+      </div>
 
-                <Button size="sm" className="h-8 gap-1">
-                  <PlusCircle className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Add Product
-                  </span>
-                </Button>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-6">
+        {paginatedProducts.map((product) => (
+          <Card key={product.id} className="overflow-hidden">
+            <CardHeader className="p-0">
+              <div className="relative w-full" style={{ paddingBottom: '100%' }}>
+                <Image
+                  src={product.images[0]}
+                  alt={product.name}
+                  layout="fill"
+                  objectFit="cover"
+                  className="transition-transform duration-300 hover:scale-105"
+                />
               </div>
-            </div>
-            <TabsContent value="all">
-              <Card x-chunk="dashboard-06-chunk-0">
-                <CardHeader>
-                  <CardTitle>Products</CardTitle>
-                  <CardDescription>
-                    Manage your products and view their sales performance.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="hidden w-[100px] sm:table-cell">
-                          <span className="sr-only">Image</span>
-                        </TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="hidden md:table-cell">
-                          Price par hour
-                        </TableHead>
-                        <TableHead className="hidden md:table-cell">
-                          Deposit
-                        </TableHead>
-                        <TableHead className="hidden md:table-cell">
-                          Created at
-                        </TableHead>
-                        <TableHead>
-                          <span className="sr-only">Actions</span>
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                    {listProducts.map((product) => (
-                      <TableRow key={product.id}>
-                        <TableCell className="hidden sm:table-cell">
-                          <Image
-                            alt={product.name}
-                            className="aspect-square rounded-md object-cover"
-                            height="64"
-                            src={product.images[0]}
-                            width="64"
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">{product.name}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">Draft</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">${product.pricePerHour}</TableCell>
-                        <TableCell className="hidden md:table-cell">${product.cautionPrice}</TableCell>
-                        <TableCell className="hidden md:table-cell">2023-07-12 10:42 AM</TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button aria-haspopup="true" size="icon" variant="ghost">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-                <CardFooter>
-                  <div className="text-xs text-muted-foreground">
-                    Showing <strong>1-{Math.min(listProducts.length, 10)}</strong> of <strong>{listProducts.length}</strong>{" "}
-                    products
-                  </div>
-                </CardFooter>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </main>
+            </CardHeader>
+            <CardContent className="p-2">
+              <CardTitle className="text-sm font-medium mb-1">{product.name}</CardTitle>
+              <div className="flex flex-col gap-1">
+                <Badge variant="secondary" className="text-xs w-fit">
+                  ${product.pricePerHour.toFixed(2)} / hour
+                </Badge>
+                <span className="text-xs text-muted-foreground">
+                  Caution: ${product.cautionPrice.toFixed(2)}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Owner: {product.owner}</p>
+            </CardContent>
+            <CardFooter className="p-2 pt-0">
+              <button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-1 px-2 rounded-md transition-colors text-xs">
+                Rent Now
+              </button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+
+      {pageCount > 1 && (
+        <div className="flex justify-center gap-2 mt-6">
+          <Button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <span className="self-center">
+            Page {currentPage} of {pageCount}
+          </span>
+          <Button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, pageCount))}
+            disabled={currentPage === pageCount}
+          >
+            Next
+          </Button>
+        </div>
+      )}
+    </div>
       </div>
     </div>
   )
