@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 // import { Product } from "@/types/product"
 
@@ -201,43 +202,40 @@ export default function Home() {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-6">
             {paginatedProducts.map((product) => (
-              <Card key={product.id} className="overflow-hidden">
-                <CardHeader className="p-0">
-                  <div
-                    className="relative w-full"
-                    style={{ paddingBottom: "100%" }}
-                  >
-                    <Image
-                      src={product.images[0]}
-                      alt={product.name}
-                      layout="fill"
-                      objectFit="cover"
-                      className="transition-transform duration-300 hover:scale-105"
-                    />
-                  </div>
-                </CardHeader>
-                <CardContent className="p-2">
-                  <CardTitle className="text-sm font-medium mb-1">
-                    {product.name}
-                  </CardTitle>
-                  <div className="flex flex-col gap-1">
-                    <Badge variant="secondary" className="text-xs w-fit">
-                      ${product.pricePerHour.toFixed(2)} / hour
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      Caution: ${product.cautionPrice.toFixed(2)}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Owner: {product.owner}
-                  </p>
-                </CardContent>
-                <CardFooter className="p-2 pt-0">
-                  <button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-1 px-2 rounded-md transition-colors text-xs">
-                    Rent Now
-                  </button>
-                </CardFooter>
-              </Card>
+              <Link href={"/products/" + product.id}>
+                <Card key={product.id} className="overflow-hidden">
+                  <CardHeader className="p-0">
+                    <div
+                      className="relative w-full"
+                      style={{ paddingBottom: "100%" }}
+                    >
+                      <Image
+                        src={product.images[0]}
+                        alt={product.name}
+                        layout="fill"
+                        objectFit="cover"
+                        className="transition-transform duration-300 hover:scale-105"
+                      />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-2">
+                    <CardTitle className="text-sm font-medium mb-1">
+                      {product.name}
+                    </CardTitle>
+                    <div className="flex flex-col gap-1">
+                      <Badge variant="secondary" className="text-xs w-fit">
+                        ${product.pricePerHour.toFixed(2)} / hour
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        Caution: ${product.cautionPrice.toFixed(2)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Owner: {product.owner}
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
 

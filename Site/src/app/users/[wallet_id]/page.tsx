@@ -14,10 +14,11 @@ async function getUserByWalletId(walletId: string): Promise<User | null> {
   // Mock user data
   const user: User = {
     id: "123e4567-e89b-12d3-a456-426614174000",
-    username: "bikeLover2023",
+    username: "Raxo",
     walletId: walletId,
     avatar: "/placeholder.svg?height=100&width=100",
     rating: 4.5,
+    telegram_handle: "@raxocoding"
   }
   
   return user
