@@ -11,10 +11,10 @@ WORKDIR /app
 COPY . .
 
 # Installer les dépendances du projet
-RUN yarn install
+RUN npm install
 
 # Exposer le port 3000
 EXPOSE 3000
 
 # Commande par défaut pour démarrer l'application Next.js
-CMD ["yarn", "dev"]
+CMD ["npm", "run", "dev"]
