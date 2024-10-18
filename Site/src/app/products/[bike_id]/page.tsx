@@ -44,7 +44,7 @@ export default async function BikePage({ params }: { params: { bike_id: string }
   }
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto">
       <div className="grid md:grid-cols-2 gap-6">
         <div>
           <div className="relative aspect-video mb-4">
