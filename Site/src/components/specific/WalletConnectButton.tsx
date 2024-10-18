@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Wallet, LogOut, Loader2, User } from "lucide-react";
+import { Wallet, LogOut, Loader2, User, Package } from "lucide-react";
 import Link from "next/link";
 
 // Helper function to format the wallet address
@@ -26,7 +26,9 @@ export function WalletConnectButton() {
 
   useEffect(() => {
     const fetchWalletInfo = async () => {
-      setWalletAddress(tonConnectUI?.account?.address.replace(":", "x") || null);
+      setWalletAddress(
+        tonConnectUI?.account?.address.replace(":", "x") || null
+      );
     };
 
     fetchWalletInfo();
@@ -70,6 +72,11 @@ export function WalletConnectButton() {
         <Link href={"/users/" + walletAddress}>
           <DropdownMenuItem className="cursor-pointer">
             <User className="mr-2 h-4 w-4" /> Profile
+          </DropdownMenuItem>
+        </Link>
+        <Link href={"/inventory"}>
+          <DropdownMenuItem className="cursor-pointer">
+            <Package className="mr-2 h-4 w-4" /> Inventory
           </DropdownMenuItem>
         </Link>
         <DropdownMenuItem onClick={handleDisconnect} className="cursor-pointer">
