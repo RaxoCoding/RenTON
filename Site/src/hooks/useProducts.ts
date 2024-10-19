@@ -1,5 +1,6 @@
 import { Product } from "@/types/product";
 import { useQuery } from "@tanstack/react-query";
+import { getProducts } from "@/supabase/productsQuery";
 
 const productsMock = [
   {
@@ -112,10 +113,12 @@ const productsMock = [
   },
 ];
 
+
 export function useProducts() {
-  const fetchProducts = async (): Promise<Product[] | null> => {
-    return productsMock;
-  };
+  // const fetchProducts = async (): Promise<Product[] | null> => {
+  //   return productsMock;
+  // };
+
 
   const {
     data: products,
@@ -123,7 +126,7 @@ export function useProducts() {
     isLoading,
   } = useQuery<Product[] | null, Error>({
     queryKey: ["products"],
-    queryFn: fetchProducts,
+    queryFn: getProducts,
   });
 
   return {
