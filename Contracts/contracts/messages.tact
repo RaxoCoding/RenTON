@@ -2,7 +2,7 @@
 struct AgreementInfos {
     owner: Address;
     customer: Address;
-    token: Address;                         // TODO: change Int to NFT
+    token: Address;
     timestart: Int as uint128;          // in seconds starting from 1st january 1970 at 0h00 UTC+0   (using Now() function)
     agreement_duration: Int as uint128; // timestart + agreement_duration = time to give stake to Owner
     price_per_hour: Int as uint128;     // TODO: Use appropriate token unit
