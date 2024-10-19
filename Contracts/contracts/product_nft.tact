@@ -1,9 +1,5 @@
 import "@stdlib/deploy";
-
-message Add {
-    queryId: Int as uint64;
-    amount: Int as uint32;
-}
+import "./messages.tact";
 
 const minNftValue: Int = ton("0.1");
 
@@ -65,29 +61,6 @@ contract ProductNft with Deployable {
     get fun nftId(): Int {
         return self.curNftId;
     }
-}
-
-message InitNft {
-    owner: Address;
-    customer: Address;
-    productStake: Int as coins;
-    productName: String;
-    productDescription: String;
-    descriptionImageUrl: String;
-}
-
-struct NftSummary {
-    owner: Address;
-    customer: Address;
-    productStake: Int as coins;
-    productStakeFilled: Bool;
-    productName: String;
-    productDescription: String;
-    descriptionImageUrl: String;
-}
-
-message ReceiveFees {
-    customer: Address
 }
 
 contract Nft with Deployable {
