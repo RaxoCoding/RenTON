@@ -26,11 +26,7 @@ export default function ProductPage({ params }: { params: { product_id: string }
     setModalImage(index);
     setIsModalOpen(true);
   };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
-
+  
   const nextImage = () => {
     setModalImage((prev) => (prev + 1) % product.images.length);
   };
