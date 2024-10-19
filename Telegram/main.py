@@ -121,8 +121,8 @@ A customer wishes to hire your bike under this ad {infos["uuid"]}. Do you accept
 		"renter_id":infos["renter_id"],
 		"uuid":str(uuid_offer)
 	}
-	session_tradeoffer[uuid_offer] = jwt.encode(payload=payload, key=my_secret)
-
+	session_tradeoffer[str(uuid_offer)] = jwt.encode(payload=payload, key=my_secret)
+	print(session_tradeoffer)
 	accept_deny = InlineKeyboardMarkup(row_width=1, inline_keyboard=[[
 		InlineKeyboardButton(text="Accept", callback_data=f"{uuid_offer}-oui"),
 		InlineKeyboardButton(text="Deny", callback_data=f"{uuid_offer}-non")
