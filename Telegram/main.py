@@ -1,11 +1,10 @@
 
 # Importing required libraries 
-from aiogram import Bot, Dispatcher, executor, types 
-from aiogram.types import ReplyKeyboardMarkup 
-import time, re
+from aiogram import Bot, Dispatcher, types, F, executor
+from aiogram.types import ReplyKeyboardMarkup , KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+import re, jwt, uuid
 import sqlite3
-import time, uuid
-
+import callback_data
 ###########################################################################################"
 
 DB_PATH = 'user.db'
@@ -47,7 +46,7 @@ def check_uuidd(uuid):
 	return record[0]
 
 session_manager = {}
-
+my_secret = 'my_super_secret'
 init_db()
 str_db1 = str(uuid.uuid4())
 str_db2 = str(uuid.uuid4())
@@ -80,21 +79,29 @@ What action do you want to take?
 
 bot = Bot(token=key) 
 
-dp = Dispatcher(bot) 
+dp = Dispatcher() 
 
-keyboard_reply = ReplyKeyboardMarkup( 
-	resize_keyboard=True, one_time_keyboard=True).add("Hire a bike", "Managing your rental", "Report a problem") 
+menu = InlineKeyboardMarkup(row_width=1, inline_keyboard=[[
+	InlineKeyboardButton(text="Hire", callback_data="Hire_bike"),
+	InlineKeyboardButton(text="Managing your rental", callback_data="Manag_rent"),
+	InlineKeyboardButton(text="Report a problem", callback_data="Report")
+	]])
 
-keyboard_reply_offer = ReplyKeyboardMarkup( 
-	resize_keyboard=True, one_time_keyboard=True).add("Offer", "Cancel") 
+do_offer = InlineKeyboardMarkup(row_width=1, inline_keyboard=[[
+	InlineKeyboardButton(text="Offer", callback_data="Offer"),
+	InlineKeyboardButton(text="Cancel", callback_data="Cancel"),
+	]])
 
-renter_response = ReplyKeyboardMarkup( 
-	resize_keyboard=True, one_time_keyboard=True).add("Accept", "Deny") 
+accept_deny = InlineKeyboardMarkup(row_width=1, inline_keyboard=[[
+	InlineKeyboardButton(text="Accept", callback_data="Accept"),
+	InlineKeyboardButton(text="Deny", callback_data="Deny"),
+	]])
 
+dp.callback_query_handlers.register(callback_data.ok_action, F.data == 'Hire_bike')
 
 @dp.message_handler(commands=['start', 'help']) 
 async def welcome(message: types.Message): 
-	await message.reply(wlc_msg, reply_markup=keyboard_reply) 
+	await message.reply(wlc_msg, reply_markup=menu) 
 
 @dp.message_handler() 
 async def check_rp(message: types.Message): 
@@ -111,17 +118,29 @@ Visible on the website page.
 		None
 
 	if message.text == "Offer":
-		message_to_renter = """
+
+		infos = jwt.decode(session_manager[message.from_id], key=my_secret, algorithms=['HS256'])
+		message_to_renter = f"""
 Hey,
-A customer wishes to hire your bike under this ad XXXXX. Do you accept?
+A customer wishes to hire your bike under this ad {infos[uuid]}. Do you accept?
 """
-		await bot.send_message(chat_id=6324596694, text=message_to_renter, reply_markup=renter_response)
-		await message.reply("Offer sent to the renter", reply_markup=keyboard_reply)
+		await bot.send_message(chat_id=infos['renter_id'], text=message_to_renter, reply_markup=accept_deny)
+		await message.reply("Offer sent to the renter", reply_markup=menu)
+
 
 	if re.match(regex_uuid, message.text):
+		uuid_rent = check_uuidd(message.text)
+
 		if check_uuidd(message.text) == None:
-			await message.reply("No UUID matches what you have entered. Back to menu", reply_markup=keyboard_reply)
+			await message.reply("No UUID matches what you have entered. Back to menu", reply_markup=menu)
 		else:
-			await message.reply("Select the action you want to take", reply_markup=keyboard_reply_offer)
+			payload_data = {
+				"client_id":message.from_id,
+				"uuid":message.text,
+				"renter_id":uuid_rent
+			}
+			token = jwt.encode(payload=payload_data, key=my_secret)
+			session_manager[message.from_id] = token
+			await message.reply("Select the action you want to take", reply_markup=do_offer)
 	
 executor.start_polling(dp) 
