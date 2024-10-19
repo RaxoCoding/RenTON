@@ -5,7 +5,7 @@ import { WalletConnectButton } from "./WalletConnectButton";
 
 export function NavBar() {
   return (
-    <nav className="bg-card text-card-foreground p-4">
+    <nav className="bg-secondary text-secondary-foreground p-4">
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center">
           <Link href="/" className="text-xl font-bold mr-4">

@@ -50,7 +50,7 @@ export function WalletConnectButton() {
 
   if (!walletAddress) {
     return (
-      <Button onClick={handleConnect} variant="outline" size="sm">
+      <Button onClick={handleConnect} variant="default" size="sm">
         {connectionRestored ? (
           <Wallet className="mr-2 h-4 w-4" />
         ) : (
@@ -63,7 +63,7 @@ export function WalletConnectButton() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild> 
         <Button variant="outline" size="sm">
           <Wallet className="mr-2 h-4 w-4" /> {formatAddress(walletAddress)}
         </Button>
