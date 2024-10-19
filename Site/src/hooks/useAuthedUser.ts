@@ -4,6 +4,7 @@ import { User } from "@/types/user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useIsConnectionRestored, useTonConnectUI } from "@tonconnect/ui-react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
 const userMock = {
   id: "123e4567-e89b-12d3-a456-426614174000",
@@ -42,8 +43,18 @@ export function useAuthedUser() {
           }
         );
 
-				tonConnectUI.openModal();
+        tonConnectUI.openModal();
       });
+
+      // Check if account exists else create it
+      const { data, error } = await supabase
+        .from("users")
+        .select("id")
+        .eq("walletAddress", tonConnectUI.account?.address)
+        .maybeSingle();
+
+      if (error) throw error;
+
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["authed_user"] });
@@ -54,7 +65,7 @@ export function useAuthedUser() {
     mutationFn: async () => {
       if (!tonConnectUI?.account) throw new Error("Not authenticated!");
 
-			await new Promise((resolve, reject) => {
+      await new Promise((resolve, reject) => {
         const unsubscribe = tonConnectUI.onStatusChange(
           () => {
             unsubscribe();
@@ -65,7 +76,7 @@ export function useAuthedUser() {
           }
         );
 
-				tonConnectUI.disconnect();
+        tonConnectUI.disconnect();
       });
     },
     onSuccess: () => {
@@ -81,7 +92,11 @@ export function useAuthedUser() {
   } = useQuery<User | null, Error>({
     queryKey: ["authed_user"],
     queryFn: fetchUser,
-    enabled: (connectionRestored && tonConnectUI != undefined && tonConnectUI.account != null),
+    enabled:
+      connectionRestored &&
+      !!tonConnectUI &&
+      !!tonConnectUI.account &&
+      !!supabase,
   });
 
   return {
