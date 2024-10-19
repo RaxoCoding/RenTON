@@ -1,8 +1,5 @@
 "use client";
 
-import { useIsConnectionRestored } from "@tonconnect/ui-react";
-import { useState, useEffect } from "react";
-import { useTonConnectUI } from "@tonconnect/ui-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Wallet, LogOut, Loader2, User, Package } from "lucide-react";
 import Link from "next/link";
+import { useAuthedUser } from "@/hooks/useAuthedUser";
 
 // Helper function to format the wallet address
 const formatAddress = (address: string) => {
@@ -20,38 +18,20 @@ const formatAddress = (address: string) => {
 };
 
 export function WalletConnectButton() {
-  const [tonConnectUI] = useTonConnectUI();
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const connectionRestored = useIsConnectionRestored();
-
-  useEffect(() => {
-    const fetchWalletInfo = async () => {
-      setWalletAddress(
-        tonConnectUI?.account?.address.replace(":", "x") || null
-      );
-    };
-
-    fetchWalletInfo();
-    const unsubscribe = tonConnectUI.onStatusChange(fetchWalletInfo);
-
-    return () => {
-      unsubscribe();
-    };
-  }, [tonConnectUI]);
+  const { authedUser, isLoading, login, logout } = useAuthedUser();
 
   const handleConnect = () => {
-    tonConnectUI.openModal();
+    login();
   };
 
   const handleDisconnect = () => {
-    tonConnectUI.disconnect();
-    setWalletAddress(null);
+    logout();
   };
 
-  if (!walletAddress) {
+  if (!authedUser) {
     return (
       <Button onClick={handleConnect} variant="default" size="sm">
-        {connectionRestored ? (
+        {!isLoading ? (
           <Wallet className="mr-2 h-4 w-4" />
         ) : (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -65,11 +45,11 @@ export function WalletConnectButton() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild> 
         <Button variant="outline" size="sm">
-          <Wallet className="mr-2 h-4 w-4" /> {formatAddress(walletAddress)}
+          <Wallet className="mr-2 h-4 w-4" /> {formatAddress(authedUser.walletAddress)}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <Link href={"/users/" + walletAddress}>
+        <Link href={"/users/" + authedUser.username}>
           <DropdownMenuItem className="cursor-pointer">
             <User className="mr-2 h-4 w-4" /> Profile
           </DropdownMenuItem>
