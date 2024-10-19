@@ -71,16 +71,17 @@ export default function InventoryPage() {
           <Card key={product.id}>
             <CardHeader>
               <CardTitle>{product.name}</CardTitle>
-            </CardHeader>
-            <CardContent>
               <div className="relative aspect-square mb-4">
                 <Image
                   src={product.images[0]}
                   alt={product.name}
-                  fill
-                  className="object-cover rounded-md"
+                  fill={true}
+                  objectFit="cover"
+                  className="rounded-md"
                 />
               </div>
+            </CardHeader>
+            <CardContent>
               <p className="text-sm text-gray-600 mb-4 truncate">
                 {product.description || "No description"}
               </p>

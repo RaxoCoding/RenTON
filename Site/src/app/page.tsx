@@ -115,7 +115,7 @@ export default function Home() {
                         alt={product.name}
                         layout="fill"
                         objectFit="cover"
-                        className="transition-transform duration-300 hover:scale-105"
+                        className="transition-transform duration-300"
                       />
                     </div>
                   </CardHeader>
