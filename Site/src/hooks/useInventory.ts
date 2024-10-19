@@ -5,6 +5,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getProducts, addProductToSupabase, updateProductInSupabase } from "@/supabase/productsQuery";
 import { useAuthedUser } from "./useAuthedUser";
 
+interface baseSideEffects {
+  onSuccess?: (data: unknown) => void;
+  onError?: (error: unknown) => void;
+  onSettled?: (data: unknown, error: unknown) => void;
+}
+
 export function useInventory() {
   const queryClient = useQueryClient();
   const { authedUser } = useAuthedUser();
@@ -16,8 +22,8 @@ export function useInventory() {
     return await getProducts(authedUser.id);
   };
 
-  interface addToInventoryVariables {
-    product: Omit<Product, "id" | "owner">;
+  interface addToInventoryVariables extends baseSideEffects {
+    product: Omit<Product, "id" | "owner"> & { imagesFiles: File[] };
   }
 
   const addToInventory = useMutation({
@@ -26,15 +32,22 @@ export function useInventory() {
 
       await addProductToSupabase({ ...product, owner: authedUser.id });
     },
-    onSuccess: () => {
-      // Invalide le cache pour actualiser les données
+    onSuccess: (_, { onSuccess }: addToInventoryVariables) => {
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      if (onSuccess) {
+        onSuccess(error);
+      }
+    },
+    onError: (error, { onError }: addToInventoryVariables) => {
+      if (onError) {
+        onError(error);
+      }
     },
   });
 
-  interface updateProductVariables {
+  interface updateProductVariables extends baseSideEffects {
     productId: string;
-    updates: Partial<Omit<Product, "id" | "owner">>;
+    updates: Omit<Product, "owner"> & { imagesFiles: File[] };
   }
 
   const updateProduct = useMutation({
@@ -44,9 +57,16 @@ export function useInventory() {
       // Met à jour le produit dans Supabase
       await updateProductInSupabase(productId, updates);
     },
-    onSuccess: () => {
-      // Invalide le cache pour actualiser les données
+    onSuccess: (_, { onSuccess }: updateProductVariables) => {
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      if (onSuccess) {
+        onSuccess(error);
+      }
+    },
+    onError: (error, { onError }: updateProductVariables) => {
+      if (onError) {
+        onError(error);
+      }
     },
   });
 

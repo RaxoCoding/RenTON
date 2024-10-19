@@ -10,30 +10,24 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Product } from "@/types/product";
 import Link from "next/link";
 import InventoryPageSkeleton from "./loading";
 import { useInventory } from "@/hooks/useInventory";
 import Image from "next/image";
+import { ProductForm } from "@/components/specific/ProductForm";
+import { toast } from "sonner";
 
 export default function InventoryPage() {
-  const { products, isLoading, addToInventory, updateProduct } = useInventory();
+  const { products, isLoading, addToInventory, isAddingToInventory, updateProduct, isUpdatingProduct } = useInventory();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleAddProduct = (newProduct: Omit<Product, "id" | "owner">) => {
+  const handleAddProduct = (
+    newProduct: Omit<Product, "id" | "owner"> & { imagesFiles: File[] }
+  ) => {
     addToInventory({
       product: {
         name: newProduct.name,
@@ -41,15 +35,34 @@ export default function InventoryPage() {
         description: newProduct.description,
         pricePerHour: newProduct.pricePerHour,
         cautionPrice: newProduct.cautionPrice,
+        imagesFiles: newProduct.imagesFiles,
       },
+      onSuccess() {
+        setIsDialogOpen(false);
+        toast.success("Product updated!");
+      },
+      onError() {
+        toast.error("Error when adding product!");
+      }
     });
-    setIsDialogOpen(false);
   };
 
-  const handleEditProduct = (updatedProduct: Omit<Product, "owner">) => {
-    updateProduct({ productId: updatedProduct.id, updates: updatedProduct });
-    setEditingProduct(null);
-    setIsDialogOpen(false);
+  const handleEditProduct = (
+    updatedProduct: Omit<Product, "owner"> & { imagesFiles: File[] }
+  ) => {
+    updateProduct(
+      { productId: updatedProduct.id, updates: updatedProduct },
+      {
+        onSuccess() {
+          setEditingProduct(null);
+          setIsDialogOpen(false);
+          toast.success("Product updated!");
+        },
+        onError() {
+          toast.error("Error when updating product!");
+        }
+      }
+    );
   };
 
   if (!products || isLoading) {
@@ -70,6 +83,7 @@ export default function InventoryPage() {
             <ProductForm
               onSubmit={handleAddProduct}
               onCancel={() => setIsDialogOpen(false)}
+              isSubmitting={isAddingToInventory}
             />
           </DialogContent>
         </Dialog>
@@ -142,122 +156,11 @@ export default function InventoryPage() {
                 setEditingProduct(null);
                 setIsDialogOpen(false);
               }}
+              isSubmitting={isUpdatingProduct}
             />
           )}
         </DialogContent>
       </Dialog>
     </div>
-  );
-}
-
-type ProductFormProps = {
-  product?: Product;
-  onSubmit: (product: Omit<Product, "owner">) => void;
-  onCancel: () => void;
-};
-
-function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
-  const [name, setName] = useState(product?.name || "");
-  const [description, setDescription] = useState(product?.description || "");
-  const [pricePerHour, setPricePerHour] = useState(
-    product?.pricePerHour.toString() || ""
-  );
-  const [cautionPrice, setCautionPrice] = useState(
-    product?.cautionPrice.toString() || ""
-  );
-  const [imageUrl, setImageUrl] = useState(product?.images[0] || "");
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit({
-      id: product?.id || "",
-      name,
-      description,
-      images: [imageUrl],
-      pricePerHour: parseFloat(pricePerHour),
-      cautionPrice: parseFloat(cautionPrice),
-    });
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <DialogHeader>
-        <DialogTitle>
-          {product ? "Edit Product" : "Add New Product"}
-        </DialogTitle>
-        <DialogDescription>
-          {product
-            ? "Make changes to your product here."
-            : "Add the details of your new product here."}
-        </DialogDescription>
-      </DialogHeader>
-      <div className="grid gap-4 py-4">
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="name" className="text-right">
-            Name
-          </Label>
-          <Input
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="col-span-3"
-          />
-        </div>
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="description" className="text-right">
-            Description
-          </Label>
-          <Input
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="col-span-3"
-          />
-        </div>
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="pricePerHour" className="text-right">
-            Price per hour
-          </Label>
-          <Input
-            id="pricePerHour"
-            type="number"
-            value={pricePerHour}
-            onChange={(e) => setPricePerHour(e.target.value)}
-            className="col-span-3"
-          />
-        </div>
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="cautionPrice" className="text-right">
-            Caution price
-          </Label>
-          <Input
-            id="cautionPrice"
-            type="number"
-            value={cautionPrice}
-            onChange={(e) => setCautionPrice(e.target.value)}
-            className="col-span-3"
-          />
-        </div>
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="imageUrl" className="text-right">
-            Image URL
-          </Label>
-          <Input
-            id="imageUrl"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            className="col-span-3"
-          />
-        </div>
-      </div>
-      <DialogFooter>
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button type="submit">
-          {product ? "Save changes" : "Add product"}
-        </Button>
-      </DialogFooter>
-    </form>
   );
 }

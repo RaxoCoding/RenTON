@@ -15,8 +15,7 @@ async function uploadImage(file : File) {
     .upload(fileName, file);
 
   if (error) {
-    console.error('Error uploading image:', error.message);
-    return { success: false, error };
+    throw error;
   }
 
   // Return the uploaded file's public URL (if needed)
@@ -24,7 +23,7 @@ async function uploadImage(file : File) {
     .from('images')
     .getPublicUrl(fileName);
 
-  return { success: true, publicUrl: data.publicUrl };
+  return { publicUrl: data.publicUrl };
 }
 
 export default uploadImage;
