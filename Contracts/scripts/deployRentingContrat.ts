@@ -1,11 +1,11 @@
 import { toNano } from '@ton/core';
-import { TestContract } from '../wrappers/TestContract';
+import { RentingContract } from '../wrappers/RentingContrat';
 import { NetworkProvider } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider) {
-    const testContract = provider.open(await TestContract.fromInit(BigInt(Math.floor(Math.random() * 10000))));
+    const rentingContrat = provider.open(await RentingContract.fromInit());
 
-    await testContract.send(
+    await rentingContrat.send(
         provider.sender(),
         {
             value: toNano('0.05'),
@@ -16,7 +16,7 @@ export async function run(provider: NetworkProvider) {
         }
     );
 
-    await provider.waitForDeploy(testContract.address);
+    await provider.waitForDeploy(rentingContrat.address);
 
-    console.log('ID', await testContract.getId());
+    console.log('Agreements', await rentingContrat.getAgreements());
 }

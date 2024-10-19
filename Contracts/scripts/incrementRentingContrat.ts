@@ -1,22 +1,22 @@
 import { Address, toNano } from '@ton/core';
-import { TestContract } from '../wrappers/TestContract';
+import { RentingContrat } from '../wrappers/RentingContrat';
 import { NetworkProvider, sleep } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider, args: string[]) {
     const ui = provider.ui();
 
-    const address = Address.parse(args.length > 0 ? args[0] : await ui.input('TestContract address'));
+    const address = Address.parse(args.length > 0 ? args[0] : await ui.input('RentingContrat address'));
 
     if (!(await provider.isContractDeployed(address))) {
         ui.write(`Error: Contract at address ${address} is not deployed!`);
         return;
     }
 
-    const testContract = provider.open(TestContract.fromAddress(address));
+    const rentingContrat = provider.open(RentingContrat.fromAddress(address));
 
-    const counterBefore = await testContract.getCounter();
+    const counterBefore = await rentingContrat.getCounter();
 
-    await testContract.send(
+    await rentingContrat.send(
         provider.sender(),
         {
             value: toNano('0.05'),
@@ -30,12 +30,12 @@ export async function run(provider: NetworkProvider, args: string[]) {
 
     ui.write('Waiting for counter to increase...');
 
-    let counterAfter = await testContract.getCounter();
+    let counterAfter = await rentingContrat.getCounter();
     let attempt = 1;
     while (counterAfter === counterBefore) {
         ui.setActionPrompt(`Attempt ${attempt}`);
         await sleep(2000);
-        counterAfter = await testContract.getCounter();
+        counterAfter = await rentingContrat.getCounter();
         attempt++;
     }
 
