@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { useAuthedUser } from "@/hooks/useAuthedUser";
+import SettingsPageSkeleton from "./loading";
 
 export default function SettingsPage() {
 	const { authedUser, updateUser, isUpdatingUser, deleteUser, isDeletingUser } = useAuthedUser();
@@ -39,13 +40,17 @@ export default function SettingsPage() {
 		}
 	}, [authedUser])
 
+	if (!authedUser) {
+		return <SettingsPageSkeleton />
+	}
+
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
 
 		updateUser({
       updates: { username, telegramHandle },
       onSuccess: () => toast.success("Your profile has been successfully updated."),
-      onError: (error: unknown) => toast.error(
+      onError: () => toast.error(
         "There was an error updating your profile. Please try again."
       ),
     });
@@ -54,7 +59,7 @@ export default function SettingsPage() {
   const handleDeleteAccount = async () => {
 		deleteUser({
       onSuccess: () => toast.success("Your account has been successfully deleted."),
-      onError: (error: unknown) => toast.error(
+      onError: () => toast.error(
         "There was an error deleting your account. Please try again."
       ),
     });

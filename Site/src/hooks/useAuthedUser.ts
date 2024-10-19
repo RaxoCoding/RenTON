@@ -121,24 +121,33 @@ export function useAuthedUser() {
 
       const { error } = await supabase
         .from("users")
-        .update({ username: updates.username, telegramHandle: updates.telegramHandle })
+        .update({
+          username: updates.username,
+          telegramHandle: updates.telegramHandle,
+        })
         .eq("walletAddress", tonConnectUI.account.address);
 
       if (error) throw error;
     },
     onSuccess: (data, { onSuccess }: updaterUserVairables) => {
       queryClient.invalidateQueries({ queryKey: ["authed_user"] });
-      onSuccess && onSuccess(data);
+      if (onSuccess) {
+        onSuccess(data);
+      }
     },
     onError: (error, { onError }: updaterUserVairables) => {
-      onError && onError(error);
+      if (onError) {
+        onError(error);
+      }
     },
     onSettled: (data, error, { onSettled }: updaterUserVairables) => {
-      onSettled && onSettled(data, error);
+      if (onSettled) {
+        onSettled(data, error);
+      }
     },
   });
 
-	const deleteUser = useMutation({
+  const deleteUser = useMutation({
     mutationFn: async () => {
       if (!tonConnectUI.account) throw new Error("Not authenticated!");
 
@@ -150,16 +159,22 @@ export function useAuthedUser() {
       if (error) throw error;
     },
     onSuccess: (data, { onSuccess }: baseSideEffects) => {
-			tonConnectUI.disconnect();
-			queryClient.setQueryData(["authed_user"], null);
-			router.push("/");
-      onSuccess && onSuccess(data);
+      tonConnectUI.disconnect();
+      queryClient.setQueryData(["authed_user"], null);
+      router.push("/");
+      if (onSuccess) {
+        onSuccess(data);
+      }
     },
     onError: (error, { onError }: baseSideEffects) => {
-      onError && onError(error);
+      if (onError) {
+        onError(error);
+      }
     },
     onSettled: (data, error, { onSettled }: baseSideEffects) => {
-      onSettled && onSettled(data, error);
+      if (onSettled) {
+        onSettled(data, error);
+      }
     },
   });
 
@@ -185,9 +200,9 @@ export function useAuthedUser() {
     isLoggingIn: loginUser.isPending,
     logout: logoutUser.mutate,
     isLoggingOut: logoutUser.isPending,
-		updateUser: updateUser.mutate,
-		isUpdatingUser: updateUser.isPending,
-		deleteUser: deleteUser.mutate,
-		isDeletingUser: deleteUser.isPending
+    updateUser: updateUser.mutate,
+    isUpdatingUser: updateUser.isPending,
+    deleteUser: deleteUser.mutate,
+    isDeletingUser: deleteUser.isPending,
   };
 }
