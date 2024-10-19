@@ -1,5 +1,7 @@
 import { supabase } from '../lib/supabaseClient';
 import { Product } from '../types/product'; // Assurez-vous d'importer le type Product depuis un fichier de type
+import { FullProduct } from "@/types/product";
+
 
 // Function to fetch products
 export async function getProducts(): Promise<Product[] | null> {
@@ -16,7 +18,7 @@ export async function getProducts(): Promise<Product[] | null> {
   }
 
 // Fonction pour récupérer un produit par son UUID
-export async function getProductById(productId: string): Promise<Product | null> {
+export async function getProductById(productId: string): Promise<FullProduct | null> {
     const { data, error } = await supabase
       .from('products')
       .select('*')
@@ -28,5 +30,19 @@ export async function getProductById(productId: string): Promise<Product | null>
       return null;
     }
 
-    return data as Product; // On s'assure que les données correspondent au type Product
+    const { data: ownerData, error: ownerError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', data?.owner)
+        .single();
+
+    if (ownerError) {
+        console.error('Erreur lors de la récupération du propriétaire:', ownerError);
+        return null;
+    }
+
+    return {
+        ...data,
+        owner: ownerData,
+    } as FullProduct;
 }

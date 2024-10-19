@@ -1,8 +1,8 @@
-import { Product } from "@/types/product";
-import { User } from "@/types/user";
 import { useQuery } from "@tanstack/react-query";
+import { getProductById } from "@/supabase/productsQuery";
+import { FullProduct } from "@/types/product";
 
-type FullProduct = Omit<Product, "owner"> & { owner: User };
+
 
 const productMock = {
 	id: '123',
@@ -23,9 +23,9 @@ const productMock = {
 };
 
 export function useProduct(productId: string) {
-  const fetchProduct = async (): Promise<FullProduct | null> => {
-    return productMock;
-  };
+  // const fetchProduct = async (): Promise<FullProduct | null> => {
+  //   return productMock;
+  // };
 
   const {
     data: product,
@@ -33,7 +33,7 @@ export function useProduct(productId: string) {
     isLoading,
   } = useQuery<FullProduct | null, Error>({
     queryKey: ["product", productId],
-    queryFn: fetchProduct,
+  queryFn: () => getProductById(productId),
   });
 
   return {
@@ -42,3 +42,4 @@ export function useProduct(productId: string) {
     isLoading: isLoading,
   };
 }
+

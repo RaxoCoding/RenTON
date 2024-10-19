@@ -1,3 +1,5 @@
+import { User } from "./user";
+
 export type Product = {
     id: string, // UUID
 	name: string,
@@ -7,3 +9,7 @@ export type Product = {
 	owner: string,
 	description: string | null,
 };
+
+type FullProduct = Omit<Product, "owner"> & { owner: User };
+
+export type { FullProduct };
