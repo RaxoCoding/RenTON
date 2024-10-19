@@ -5,15 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useIsConnectionRestored, useTonConnectUI } from "@tonconnect/ui-react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-
-const userMock = {
-  id: "123e4567-e89b-12d3-a456-426614174000",
-  username: "Raxo",
-  walletAddress: "fake_news",
-  avatar: "/placeholder.svg?height=100&width=100",
-  rating: 4.5,
-  telegramHandle: "@raxocoding",
-};
+import { generateUsername } from "@/lib/utils";
 
 export function useAuthedUser() {
   const router = useRouter();
@@ -22,10 +14,17 @@ export function useAuthedUser() {
   const connectionRestored = useIsConnectionRestored();
 
   const fetchUser = async (): Promise<User | null> => {
-    console.log(tonConnectUI.account);
     if (!tonConnectUI?.account) throw new Error("User not authenticated!");
 
-    return { ...userMock, walletAddress: tonConnectUI.account.address };
+    const { data, error } = await supabase
+      .from("users")
+      .select("id, username, walletAddress, avatar, rating, telegramHandle")
+      .eq("walletAddress", tonConnectUI.account.address)
+      .single();
+
+    if (error) throw error;
+
+    return { ...data };
   };
 
   const loginUser = useMutation({
@@ -46,15 +45,36 @@ export function useAuthedUser() {
         tonConnectUI.openModal();
       });
 
+      if (!tonConnectUI.account) throw new Error("Not authenticated!");
+
+      const account = {
+        address: tonConnectUI.account.address,
+        publicKey: tonConnectUI.account.publicKey,
+        walletStateInit: tonConnectUI.account.walletStateInit,
+      };
+
       // Check if account exists else create it
       const { data, error } = await supabase
         .from("users")
         .select("id")
-        .eq("walletAddress", tonConnectUI.account?.address)
+        .eq("walletAddress", account.address)
         .maybeSingle();
 
       if (error) throw error;
 
+      if (!data) {
+        const user: Omit<User, "id"> = {
+          username: generateUsername(),
+          walletAddress: account.address,
+          avatar: null,
+          rating: null,
+          telegramHandle: null,
+        };
+
+        const { error } = await supabase.from("users").insert(user);
+
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["authed_user"] });
@@ -63,7 +83,7 @@ export function useAuthedUser() {
 
   const logoutUser = useMutation({
     mutationFn: async () => {
-      if (!tonConnectUI?.account) throw new Error("Not authenticated!");
+      if (!tonConnectUI.account) throw new Error("Not authenticated!");
 
       await new Promise((resolve, reject) => {
         const unsubscribe = tonConnectUI.onStatusChange(

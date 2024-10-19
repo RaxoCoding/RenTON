@@ -11,12 +11,6 @@ import { Wallet, LogOut, Loader2, User, Package } from "lucide-react";
 import Link from "next/link";
 import { useAuthedUser } from "@/hooks/useAuthedUser";
 
-// Helper function to format the wallet address
-const formatAddress = (address: string) => {
-  if (!address) return "";
-  return `${address.slice(0, 4)}...${address.slice(-4)}`;
-};
-
 export function WalletConnectButton() {
   const { authedUser, isLoading, login, logout } = useAuthedUser();
 
@@ -45,7 +39,7 @@ export function WalletConnectButton() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild> 
         <Button variant="outline" size="sm">
-          <Wallet className="mr-2 h-4 w-4" /> {formatAddress(authedUser.walletAddress)}
+          <Wallet className="mr-2 h-4 w-4" /> {authedUser.username}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
