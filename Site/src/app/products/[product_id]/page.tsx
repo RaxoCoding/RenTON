@@ -1,29 +1,54 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { StarIcon, MessageCircle } from "lucide-react"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { StarIcon, MessageCircle, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { useProduct } from "@/hooks/useProduct"
 import ProductPageSkeleton from "./loading"
 
 export default function ProductPage({ params }: { params: { product_id: string } }) {
   const { product } = useProduct(params.product_id);
+  const [mainImage, setMainImage] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalImage, setModalImage] = useState(0);
   
   if (!product) {
     return <ProductPageSkeleton />
   }
 
+  const openModal = (index: number) => {
+    setModalImage(index);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const nextImage = () => {
+    setModalImage((prev) => (prev + 1) % product.images.length);
+  };
+
+  const prevImage = () => {
+    setModalImage((prev) => (prev - 1 + product.images.length) % product.images.length);
+  };
+
   return (
     <div className="container mx-auto">
       <div className="grid md:grid-cols-2 gap-6">
         <div>
-          <div className="relative aspect-video mb-4">
+          <div 
+            className="relative aspect-video mb-4 cursor-pointer"
+            onClick={() => openModal(mainImage)}
+          >
             <Image
-              src={product.images[0]}
+              src={product.images[mainImage]}
               alt={product.name}
               fill
               className="rounded-lg object-cover"
@@ -31,12 +56,18 @@ export default function ProductPage({ params }: { params: { product_id: string }
           </div>
           <div className="grid grid-cols-4 gap-2">
             {product.images.map((img: string, index: number) => (
-              <div key={index} className="relative aspect-square">
+              <div 
+                key={index} 
+                className="relative aspect-square cursor-pointer"
+                onClick={() => {
+                  setMainImage(index);
+                }}
+              >
                 <Image
                   src={img}
                   alt={`${product.name} - view ${index + 1}`}
                   fill
-                  className="rounded-md object-cover"
+                  className={`rounded-md object-cover ${index === mainImage ? 'ring-2 ring-primary' : ''}`}
                 />
               </div>
             ))}
@@ -46,10 +77,10 @@ export default function ProductPage({ params }: { params: { product_id: string }
           <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
           <div className="flex items-center mb-4">
             <Badge variant="secondary" className="mr-2">
-              ${product.pricePerHour}/hour
+              {product.pricePerHour}/hour
             </Badge>
             <Badge variant="outline">
-              ${product.cautionPrice} caution
+              {product.cautionPrice} caution
             </Badge>
           </div>
           <p className="text-muted-foreground mb-4">{product.description}</p>
@@ -90,37 +121,40 @@ export default function ProductPage({ params }: { params: { product_id: string }
         </div>
       </div>
       <Separator className="my-8" />
-      {/* <Card>
-        <CardHeader>
-          <CardTitle>Rental History</CardTitle>
-          <CardDescription>Recent rentals of this product</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-4">
-            {product.rentalHistory.map((rental) => (
-              <li key={rental.id} className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Avatar className="h-8 w-8 mr-3">
-                    <AvatarFallback>{rental.renter.slice(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <span>{rental.renter}</span>
-                </div>
-                <div className="flex items-center text-muted-foreground">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  <span className="mr-4">{rental.date}</span>
-                  <Clock className="h-4 w-4 mr-2" />
-                  <span>{rental.duration}</span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card> */}
       <div className="mt-8 text-center">
         <Button size="lg">
           Rent This Product
         </Button>
       </div>
+
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-[90vw] h-[90vh] p-0">
+          <div className="relative w-full h-full">
+            <Image
+              src={product.images[modalImage]}
+              alt={`${product.name} - view ${modalImage + 1}`}
+              fill
+              className="object-contain"
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 rounded-full"
+              onClick={prevImage}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full"
+              onClick={nextImage}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
