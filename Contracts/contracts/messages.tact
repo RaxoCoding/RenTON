@@ -7,6 +7,7 @@ struct AgreementInfos {
     agreement_duration: Int as uint128; // timestart + agreement_duration = time to give stake to Owner
     price_per_hour: Int as uint128;     // TODO: Use appropriate token unit
     stake: Int as uint128;              // TODO: We need to search how to use payable contract to keep it here and redistribute as needed
+    has_staked: Bool;
 }
 
 message Agreement {

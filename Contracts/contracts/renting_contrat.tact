@@ -16,7 +16,8 @@ contract RentingContract with Deployable {
             timestart: now(),
             agreement_duration: msg.agreement_duration,
             price_per_hour: msg.price_per_hour,
-            stake: msg.stake
+            stake: msg.stake,
+            has_staked: false,
         };
         let add_agreement_msg = AddCustomer{
             agreement_infos: agreement,
@@ -149,6 +150,7 @@ contract CustomersArray {
     customers_list: Array;
     customer_id: map<Address, Int>;
     parent: Address;
+    has_paid: map<Address, Bool>;
 
     init(parent: Address) {
         self.customers_list = emptyArray();
@@ -162,10 +164,27 @@ contract CustomersArray {
         require(self.customer_id.get(toAppend.agreement_infos.customer) == null, "This customer is already using something for this owner");
         self.customer_id.set(toAppend.agreement_infos.customer, self.customers_list.last_idx_free);
         self.customers_list.append(toAppend.agreement_infos);
+    }
+
+    // Receive the staking
+    receive(){
+        let customer_addr = sender();
+        let customer_idx = self.customer_id.get(customer_addr);
+        require(customer_idx != null, "Customer doesn't exist for this owner");
+        let _agreement = self.customers_list.customers.get(customer_idx!!);
+        require(_agreement != null, "Agreement is null for this customer");
+        // Check if the agreement time for the stake is respected and if the owner hasn't lied
+        let agreement: AgreementInfos = _agreement!!;
+        require(agreement.stake <= context().value, "Not enough money for staking");
+        
+
+
 
         // TODO :
         // Put stake money from customer on the contract
         // Give NFT from owner to customer
+
+
     }
 
     receive(toDelete: DeleteCustomer){
