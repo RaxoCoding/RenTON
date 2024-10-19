@@ -176,6 +176,8 @@ contract CustomersArray {
         // Check if the agreement time for the stake is respected and if the owner hasn't lied
         let agreement: AgreementInfos = _agreement!!;
         require(agreement.stake <= context().value, "Not enough money for staking");
+
+
         
 
 
