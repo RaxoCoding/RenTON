@@ -4,5 +4,5 @@ export type User = {
   walletAddress: string;
   avatar: string | null;
   rating: number | null; // 0-5
-  telegramHandle: string | null;
+  telegramHandle: string;
 };

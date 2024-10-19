@@ -5,7 +5,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useIsConnectionRestored, useTonConnectUI } from "@tonconnect/ui-react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { generateUsername } from "@/lib/utils";
 
 interface baseSideEffects {
   onSuccess?: (data: unknown) => void;
@@ -26,31 +25,31 @@ export function useAuthedUser() {
       .from("users")
       .select("id, username, walletAddress, avatar, rating, telegramHandle")
       .eq("walletAddress", tonConnectUI.account.address)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+
+    if (!data) {
+      return {
+        id: "NULL",
+        username: "",
+        walletAddress: "",
+        telegramHandle: "",
+        avatar: null,
+        rating: null,
+      };
+    }
 
     return { ...data };
   };
 
-  const loginUser = useMutation({
-    mutationFn: async () => {
-      if (tonConnectUI?.account) throw new Error("Already authenticated!");
+  interface registerUserInterface extends baseSideEffects {
+    username: string;
+    telegramHandle: string;
+  }
 
-      await new Promise((resolve, reject) => {
-        const unsubscribe = tonConnectUI.onStatusChange(
-          () => {
-            unsubscribe();
-            resolve("login");
-          },
-          (err) => {
-            reject(err);
-          }
-        );
-
-        tonConnectUI.openModal();
-      });
-
+  const registerUser = useMutation({
+    mutationFn: async ({ username, telegramHandle }: registerUserInterface) => {
       if (!tonConnectUI.account) throw new Error("Not authenticated!");
 
       const account = {
@@ -70,17 +69,51 @@ export function useAuthedUser() {
 
       if (!data) {
         const user: Omit<User, "id"> = {
-          username: generateUsername(),
+          username: username,
           walletAddress: account.address,
+          telegramHandle:
+            telegramHandle.charAt(0) == "@"
+              ? telegramHandle
+              : "@" + telegramHandle,
           avatar: null,
           rating: null,
-          telegramHandle: null,
         };
 
         const { error } = await supabase.from("users").insert(user);
 
         if (error) throw error;
       }
+    },
+    onSuccess: (_, { onSuccess }: registerUserInterface) => {
+      queryClient.invalidateQueries({ queryKey: ["authed_user"] });
+      if (onSuccess) {
+        onSuccess(error);
+      }
+    },
+    onError: (error, { onError }: registerUserInterface) => {
+      if (onError) {
+        onError(error);
+      }
+    },
+  });
+
+  const loginUser = useMutation({
+    mutationFn: async () => {
+      if (tonConnectUI?.account) throw new Error("Already authenticated!");
+
+      await new Promise((resolve, reject) => {
+        const unsubscribe = tonConnectUI.onStatusChange(
+          () => {
+            unsubscribe();
+            resolve("login");
+          },
+          (err) => {
+            reject(err);
+          }
+        );
+
+        tonConnectUI.openModal();
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["authed_user"] });
@@ -196,6 +229,8 @@ export function useAuthedUser() {
     authedUser,
     error,
     isLoading: isLoading,
+    register: registerUser.mutate,
+    isRegistering: registerUser.isPending,
     login: loginUser.mutate,
     isLoggingIn: loginUser.isPending,
     logout: logoutUser.mutate,

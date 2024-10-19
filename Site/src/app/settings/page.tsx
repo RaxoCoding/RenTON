@@ -31,7 +31,7 @@ import SettingsPageSkeleton from "./loading";
 export default function SettingsPage() {
 	const { authedUser, updateUser, isUpdatingUser, deleteUser, isDeletingUser } = useAuthedUser();
   const [username, setUsername] = useState<string>("");
-  const [telegramHandle, setTelegramHandle] = useState<string | null>(null);
+  const [telegramHandle, setTelegramHandle] = useState<string>("");
 
 	useEffect(() => {
 		if(authedUser) {

@@ -5,6 +5,7 @@ import "@/styles/globals.css";
 import { TonConnectUIProvider } from "@tonconnect/ui-react";
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { RegisterModal } from "@/components/specific/RegisterModal";
 
 export default function RootLayout({
   children,
@@ -26,6 +27,7 @@ export default function RootLayout({
           <ReactQueryProvider>
             <NavBar />
             <div className="p-5">{children}</div>
+            <RegisterModal />
           </ReactQueryProvider>
         </TonConnectUIProvider>
         <Toaster richColors />
