@@ -1,3 +1,5 @@
 yarn.lock
 .env
 Contracts/contracts/test.tact
+venv
+.venv
