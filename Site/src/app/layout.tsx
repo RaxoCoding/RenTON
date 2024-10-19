@@ -13,6 +13,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+
+      <script src="https://telegram.org/js/telegram-web-app.js" async />
       <body className="dark">
         <TonConnectUIProvider
           manifestUrl={
