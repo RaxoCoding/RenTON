@@ -10,13 +10,14 @@ import {
 import { StarIcon } from "lucide-react";
 import { useUser } from "@/hooks/useUser";
 import UserProfileSkeleton from "./loading";
+import { toUserFriendlyAddress } from "@tonconnect/ui-react";
 
 export default function UserProfile({
   params,
 }: {
-  params: { wallet_id: string };
+  params: { username: string };
 }) {
-  const { user, isLoading } = useUser(params.wallet_id);
+  const { user, isLoading } = useUser(params.username);
 
   if (isLoading || !user) {
     return <UserProfileSkeleton />;
@@ -34,7 +35,7 @@ export default function UserProfile({
           </Avatar>
           <div>
             <CardTitle>{user.username}</CardTitle>
-            <CardDescription>Wallet ID: {user.walletAddress}</CardDescription>
+            <CardDescription>Wallet ID: {toUserFriendlyAddress(user.walletAddress)}</CardDescription>
             <div className="flex items-center mt-2">
               {[...Array(5)].map((_, i) => (
                 <StarIcon

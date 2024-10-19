@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Wallet, LogOut, Loader2, User, Package } from "lucide-react";
+import { Wallet, LogOut, Loader2, User, Package, Settings } from "lucide-react";
 import Link from "next/link";
 import { useAuthedUser } from "@/hooks/useAuthedUser";
 
@@ -51,6 +51,11 @@ export function WalletConnectButton() {
         <Link href={"/inventory"}>
           <DropdownMenuItem className="cursor-pointer">
             <Package className="mr-2 h-4 w-4" /> Inventory
+          </DropdownMenuItem>
+        </Link>
+        <Link href={"/settings"}>
+          <DropdownMenuItem className="cursor-pointer">
+            <Settings className="mr-2 h-4 w-4" /> Settings
           </DropdownMenuItem>
         </Link>
         <DropdownMenuItem onClick={handleDisconnect} className="cursor-pointer">

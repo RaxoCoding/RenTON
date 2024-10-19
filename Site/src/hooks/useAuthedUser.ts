@@ -7,6 +7,12 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { generateUsername } from "@/lib/utils";
 
+interface baseSideEffects {
+  onSuccess?: (data: unknown) => void;
+  onError?: (error: unknown) => void;
+  onSettled?: (data: unknown, error: unknown) => void;
+}
+
 export function useAuthedUser() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -105,6 +111,58 @@ export function useAuthedUser() {
     },
   });
 
+  interface updaterUserVairables extends baseSideEffects {
+    updates: Omit<User, "id" | "walletAddress" | "rating" | "avatar">;
+  }
+
+  const updateUser = useMutation({
+    mutationFn: async ({ updates }: updaterUserVairables) => {
+      if (!tonConnectUI.account) throw new Error("Not authenticated!");
+
+      const { error } = await supabase
+        .from("users")
+        .update({ username: updates.username, telegramHandle: updates.telegramHandle })
+        .eq("walletAddress", tonConnectUI.account.address);
+
+      if (error) throw error;
+    },
+    onSuccess: (data, { onSuccess }: updaterUserVairables) => {
+      queryClient.invalidateQueries({ queryKey: ["authed_user"] });
+      onSuccess && onSuccess(data);
+    },
+    onError: (error, { onError }: updaterUserVairables) => {
+      onError && onError(error);
+    },
+    onSettled: (data, error, { onSettled }: updaterUserVairables) => {
+      onSettled && onSettled(data, error);
+    },
+  });
+
+	const deleteUser = useMutation({
+    mutationFn: async () => {
+      if (!tonConnectUI.account) throw new Error("Not authenticated!");
+
+      const { error } = await supabase
+        .from("users")
+        .delete()
+        .eq("walletAddress", tonConnectUI.account.address);
+
+      if (error) throw error;
+    },
+    onSuccess: (data, { onSuccess }: baseSideEffects) => {
+			tonConnectUI.disconnect();
+			queryClient.setQueryData(["authed_user"], null);
+			router.push("/");
+      onSuccess && onSuccess(data);
+    },
+    onError: (error, { onError }: baseSideEffects) => {
+      onError && onError(error);
+    },
+    onSettled: (data, error, { onSettled }: baseSideEffects) => {
+      onSettled && onSettled(data, error);
+    },
+  });
+
   const {
     data: authedUser,
     error,
@@ -127,5 +185,9 @@ export function useAuthedUser() {
     isLoggingIn: loginUser.isPending,
     logout: logoutUser.mutate,
     isLoggingOut: logoutUser.isPending,
+		updateUser: updateUser.mutate,
+		isUpdatingUser: updateUser.isPending,
+		deleteUser: deleteUser.mutate,
+		isDeletingUser: deleteUser.isPending
   };
 }

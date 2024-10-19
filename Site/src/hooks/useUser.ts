@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
 import { User } from "@/types/user";
+import { supabase } from "@/lib/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 
-const userMock = {
-  id: "123e4567-e89b-12d3-a456-426614174000",
-  username: "Raxo",
-  walletAddress: "fake_news",
-  avatar: "/placeholder.svg?height=100&width=100",
-  rating: 4.5,
-  telegramHandle: "@raxocoding"
-}
-
-export function useUser(walletAddress: string) {
+export function useUser(username: string) {
   const fetchUser = async (): Promise<User | null> => {
-    return userMock;
+    const { data, error } = await supabase
+      .from("users")
+      .select("id, username, walletAddress, avatar, rating, telegramHandle")
+      .eq("username", username)
+      .single();
+
+    if (error) throw error;
+
+    return data;
   };
 
   const {
@@ -22,8 +22,9 @@ export function useUser(walletAddress: string) {
     error,
     isLoading,
   } = useQuery<User | null, Error>({
-    queryKey: ["user", walletAddress],
+    queryKey: ["user", username],
     queryFn: fetchUser,
+    enabled: !!supabase,
   });
 
   return {

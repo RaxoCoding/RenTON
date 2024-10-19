@@ -21,20 +21,6 @@ export default function ProductPageSkeleton() {
             <Skeleton className="h-6 w-32" />
           </div>
           <Skeleton className="h-20 w-full mb-4" />
-          <Card className="mb-6">
-            <CardHeader>
-              <Skeleton className="h-6 w-24" />
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {[...Array(4)].map((_, index) => (
-                  <li key={index}>
-                    <Skeleton className="h-4 w-full" />
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
           <Card>
             <CardHeader>
               <Skeleton className="h-6 w-16" />

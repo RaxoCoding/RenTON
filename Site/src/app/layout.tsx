@@ -5,6 +5,7 @@ import "@/styles/globals.css";
 import { TonConnectUIProvider } from "@tonconnect/ui-react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function RootLayout({
   children,
@@ -31,6 +32,7 @@ export default function RootLayout({
             </ReactQueryProvider>
           </TooltipProvider>
         </TonConnectUIProvider>
+        <Toaster richColors />
       </body>
     </html>
   );
