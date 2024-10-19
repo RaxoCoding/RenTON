@@ -2,54 +2,36 @@
 
 import { Product } from "@/types/product";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTonAddress } from "@tonconnect/ui-react";
-
-const inventoryMock: Product[] = [
-  {
-    id: "1",
-    name: "Mountain Bike",
-    images: [
-      "/bike.jpg",
-    ],
-    pricePerHour: 10,
-    cautionPrice: 200,
-    owner: "user123",
-    description: "test description",
-  },
-  {
-    id: "2",
-    name: "City Bike",
-    images: [
-      "/bike.jpg",
-    ],
-    pricePerHour: 8,
-    cautionPrice: 150,
-    owner: "user123",
-		description: null
-  },
-];
+import { getProducts, addProductToSupabase, updateProductInSupabase } from "@/supabase/productsQuery";
+import { useAuthedUser } from "./useAuthedUser";
 
 export function useInventory() {
   const queryClient = useQueryClient();
-  const walletAddress = useTonAddress();
+  const { authedUser } = useAuthedUser();
 
   const fetchInventory = async (): Promise<Product[] | null> => {
-    if (!walletAddress) throw new Error("Not authenticated!");
+    if (!authedUser) throw new Error("Not authenticated!");
 
-    return inventoryMock;
+    // Récupère les produits depuis Supabase
+    return await getProducts(authedUser.id);
   };
 
   interface addToInventoryVariables {
-    product: Omit<Product, "id" | "owner">;
+    product: Omit<Product, "owner">;
   }
 
   const addToInventory = useMutation({
     mutationFn: async ({ product }: addToInventoryVariables) => {
-      if (!walletAddress) throw new Error("Not authenticated!");
+      if (!authedUser) throw new Error("Not authenticated!");
 
-      inventoryMock.push({ ...product, id: "bla", owner: "123" });
+      console.log(product);
+      // Ajoute le produit à Supabase
+
+      const { id, ...productWithoutId } = product;
+      await addProductToSupabase({ ...productWithoutId, owner: authedUser.id });
     },
     onSuccess: () => {
+      // Invalide le cache pour actualiser les données
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
     },
   });
@@ -61,29 +43,13 @@ export function useInventory() {
 
   const updateProduct = useMutation({
     mutationFn: async ({ productId, updates }: updateProductVariables) => {
-      if (!walletAddress) throw new Error("Not authenticated!");
+      if (!authedUser) throw new Error("Not authenticated!");
 
-      const productIdx = inventoryMock.findIndex((x) => x.id === productId);
-
-      if (!productIdx) throw new Error("Product does not exist!");
-
-      if (updates.name) {
-        inventoryMock[productIdx].name = updates.name;
-      }
-      if (updates.description) {
-        inventoryMock[productIdx].description = updates.description;
-      }
-      if (updates.images) {
-        inventoryMock[productIdx].images = updates.images;
-      }
-      if (updates.pricePerHour) {
-        inventoryMock[productIdx].pricePerHour = updates.pricePerHour;
-      }
-      if (updates.cautionPrice) {
-        inventoryMock[productIdx].cautionPrice = updates.cautionPrice;
-      }
+      // Met à jour le produit dans Supabase
+      await updateProductInSupabase(productId, updates);
     },
     onSuccess: () => {
+      // Invalide le cache pour actualiser les données
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
     },
   });
@@ -100,7 +66,7 @@ export function useInventory() {
   return {
     products,
     error,
-    isLoading: isLoading,
+    isLoading,
     addToInventory: addToInventory.mutate,
     isAddingToInventory: addToInventory.isPending,
     updateProduct: updateProduct.mutate,

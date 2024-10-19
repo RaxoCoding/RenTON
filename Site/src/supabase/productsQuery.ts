@@ -4,11 +4,12 @@ import { FullProduct } from "@/types/product";
 
 
 // Function to fetch products
-export async function getProducts(ownerId?: string): Promise<Product[] | null> {
+export async function getProducts(user_id?: string): Promise<Product[] | null> {
+
     let query = supabase.from('products').select('*');
 
-    if (ownerId) {
-        query = query.eq('user_id', ownerId);
+    if (user_id) {
+        query = query.eq('owner', user_id);
     }
 
     const { data, error } = await query;
@@ -50,3 +51,31 @@ export async function getProductById(productId: string): Promise<FullProduct | n
         owner: ownerData,
     } as FullProduct;
 }
+
+
+// Fonction pour ajouter un produit dans Supabase
+export async function addProductToSupabase(product: Omit<Product, "id">) {
+    const { data, error } = await supabase
+      .from('products')
+      .insert([product]);
+
+    if (error) {
+      throw new Error(`Error adding product: ${error.message}`);
+    }
+
+    return data;
+  }
+
+  // Fonction pour mettre à jour un produit dans Supabase
+  export async function updateProductInSupabase(productId: string, updates: Partial<Omit<Product, "id" | "owner">>) {
+    const { data, error } = await supabase
+      .from('products')
+      .update(updates)
+      .eq('id', productId);
+
+    if (error) {
+      throw new Error(`Error updating product: ${error.message}`);
+    }
+
+    return data;
+  }
