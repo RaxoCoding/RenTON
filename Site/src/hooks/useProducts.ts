@@ -126,7 +126,7 @@ export function useProducts() {
     isLoading,
   } = useQuery<Product[] | null, Error>({
     queryKey: ["products"],
-    queryFn: getProducts,
+    queryFn: () => getProducts(),
   });
 
   return {

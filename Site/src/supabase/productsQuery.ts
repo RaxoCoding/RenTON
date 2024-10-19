@@ -4,8 +4,12 @@ import { FullProduct } from "@/types/product";
 
 
 // Function to fetch products
-export async function getProducts(): Promise<Product[] | null> {
-    const query = supabase.from('products').select('*');
+export async function getProducts(ownerId?: string): Promise<Product[] | null> {
+    let query = supabase.from('products').select('*');
+
+    if (ownerId) {
+        query = query.eq('user_id', ownerId);
+    }
 
     const { data, error } = await query;
 
