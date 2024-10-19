@@ -34,11 +34,19 @@ export default function InventoryPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleAddProduct = (newProduct: Omit<Product, "id" | "owner">) => {
-    addToInventory({ product: newProduct });
+    addToInventory({
+      product: {
+        name: newProduct.name,
+        images: newProduct.images,
+        description: newProduct.description,
+        pricePerHour: newProduct.pricePerHour,
+        cautionPrice: newProduct.cautionPrice,
+      },
+    });
     setIsDialogOpen(false);
   };
 
-  const handleEditProduct = (updatedProduct: Product) => {
+  const handleEditProduct = (updatedProduct: Omit<Product, "owner">) => {
     updateProduct({ productId: updatedProduct.id, updates: updatedProduct });
     setEditingProduct(null);
     setIsDialogOpen(false);
@@ -144,7 +152,7 @@ export default function InventoryPage() {
 
 type ProductFormProps = {
   product?: Product;
-  onSubmit: (product: Product) => void;
+  onSubmit: (product: Omit<Product, "owner">) => void;
   onCancel: () => void;
 };
 
@@ -163,7 +171,6 @@ function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     e.preventDefault();
     onSubmit({
       id: product?.id || "",
-      owner: product?.owner || "",
       name,
       description,
       images: [imageUrl],

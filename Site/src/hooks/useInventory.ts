@@ -17,18 +17,14 @@ export function useInventory() {
   };
 
   interface addToInventoryVariables {
-    product: Omit<Product, "owner">;
+    product: Omit<Product, "id" | "owner">;
   }
 
   const addToInventory = useMutation({
     mutationFn: async ({ product }: addToInventoryVariables) => {
       if (!authedUser) throw new Error("Not authenticated!");
 
-      console.log(product);
-      // Ajoute le produit à Supabase
-
-      const { id, ...productWithoutId } = product;
-      await addProductToSupabase({ ...productWithoutId, owner: authedUser.id });
+      await addProductToSupabase({ ...product, owner: authedUser.id });
     },
     onSuccess: () => {
       // Invalide le cache pour actualiser les données
