@@ -3,7 +3,6 @@
 import { NavBar } from "@/components/specific/Navbar";
 import "@/styles/globals.css";
 import { TonConnectUIProvider } from "@tonconnect/ui-react";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -25,12 +24,10 @@ export default function RootLayout({
             returnStrategy: "back",
           }}
         >
-          <TooltipProvider>
-            <ReactQueryProvider>
-              <NavBar />
-              <div className="p-5">{children}</div>
-            </ReactQueryProvider>
-          </TooltipProvider>
+          <ReactQueryProvider>
+            <NavBar />
+            <div className="p-5">{children}</div>
+          </ReactQueryProvider>
         </TonConnectUIProvider>
         <Toaster richColors />
       </body>
