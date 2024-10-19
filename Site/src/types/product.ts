@@ -1,5 +1,5 @@
 export type Product = {
-  id: string, // UUID
+    id: string, // UUID
 	name: string,
 	images: string[],
 	pricePerHour: number,
