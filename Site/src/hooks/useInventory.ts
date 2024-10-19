@@ -56,9 +56,12 @@ export function useInventory() {
 
       // Met à jour le produit dans Supabase
       await updateProductInSupabase(productId, updates);
+
+      return productId;
     },
-    onSuccess: (_, { onSuccess }: updateProductVariables) => {
+    onSuccess: (data, { onSuccess }: updateProductVariables) => {
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      queryClient.invalidateQueries({ queryKey: ["product", data] });
       if (onSuccess) {
         onSuccess(error);
       }
