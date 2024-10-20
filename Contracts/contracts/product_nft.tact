@@ -13,6 +13,7 @@ contract ProductNft with Deployable {
     
     receive(msg: InitNft) {
         self.mint(msg);
+        self.reply("Done creation".asComment());
     }
 
     fun mint(msg: InitNft) {

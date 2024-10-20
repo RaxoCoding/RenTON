@@ -95,9 +95,25 @@ describe('RentingContrat', () => {
 
         console.log("Customers contracts : ", res["_map"]);
 
-        // Test NFT collection exists
+        // Test NFT collection exists, then create a NFT
         let nftCollectionAddress = await customersContract.getNftCollectionAddress();
         let nftCollection = blockchain.openContract(await ProductNft.fromAddress(nftCollectionAddress));
+        console.log("NFT current Id : ", await nftCollection.getNftId());
+        let ret = await nftCollection.send(
+            test_owner_wallet.getSender(),
+            {
+                value: toNano("1000"),
+            },
+            {
+                $$type: "InitNft",
+                owner: test_owner_wallet.address,
+                productName: "Test product",
+                productDescription: "Test description",
+                productValue: toNano(1000),
+                descriptionImageUrl: "https://www.google.com"
+
+            }
+        );
         console.log("NFT current Id : ", await nftCollection.getNftId());
     });
 });
