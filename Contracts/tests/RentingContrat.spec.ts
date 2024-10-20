@@ -109,18 +109,20 @@ describe('RentingContrat', () => {
                 owner: test_owner_wallet.address,
                 productName: "Test product",
                 productDescription: "Test description",
-                productValue: toNano(1000),
+                productStake: toNano(1000),
                 descriptionImageUrl: "https://www.google.com",
-                productLocation: "London"
+                productLocation: "London",
+                productHourPrice: toNano(1)
 
             }
-        );
-
-        
+        );        
         
         console.log("NFT current Id : ", await nftCollection.getNftId());
         expect(await nftCollection.getNftId()).toBe(BigInt(1));
 
-        const nft = await nftCollection.getNftId()
+        // TODO : Retrieve the nft id in returned infos
+        const nftId = await nftCollection.getNftId();
+        const nft = blockchain.openContract(Nft.fromAddress(await nftCollection.getGetNftAddress(nftId)));
+        console.log("Nft summary : ", await nft.getSummary());
     });
 });

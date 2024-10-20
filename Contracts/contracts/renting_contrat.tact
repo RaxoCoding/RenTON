@@ -155,6 +155,7 @@ contract CustomersArray {
     nftCollection: Address;
 
     init(parent: Address) {
+        dump("CustomersArray init");
         self.customers_list = emptyArray();
         self.parent = parent;
 
@@ -219,7 +220,7 @@ contract CustomersArray {
                 body: ChangeOwner{
                     nftId: agreement.token,
                     newOwner: agreement.customer
-                },
+                }.toCell(),
                 mode: 0,
                 value: ton("0.1")
             }
