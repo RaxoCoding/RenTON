@@ -70,6 +70,16 @@ contract ProductNft with Deployable {
     receive(msg: CheckNftExists) {
         //require(self.nftExists(msg.nftId), "Token does not exists");
     }
+
+    receive(msg: ChangeOwner) {
+        let nftAddress: Address = self.getNftAddress(msg.nftId);
+        send(SendParameters{
+            to: nftAddress,
+            body: msg.toCell(),
+            mode: SendRemainingValue,
+            value: ton("0")
+        });
+    }
 }
 
 contract Nft with Deployable {
@@ -81,6 +91,7 @@ contract Nft with Deployable {
     productDescription: String?;
     descriptionImageUrl: String?;
     productValue: Int?;
+    productLocation: String?;
 
     init(_parent_contract: Address, _value: Int) {
         dump("NFT creation");
@@ -98,6 +109,7 @@ contract Nft with Deployable {
         self.descriptionImageUrl =  msg.descriptionImageUrl;
         self.productValue = msg.productValue;
         self.initDone = true;
+        self.productLocation == msg.productLocation;
     }
 
     get fun summary(): NftSummary {
@@ -107,7 +119,8 @@ contract Nft with Deployable {
             productValue: self.productValue!!,
             productName: self.productName!!,
             productDescription: self.productDescription!!,
-            descriptionImageUrl: self.descriptionImageUrl!!
+            descriptionImageUrl: self.descriptionImageUrl!!,
+            productLocation: self.productLocation!!
         };
     }
 
@@ -123,6 +136,9 @@ contract Nft with Deployable {
         }
         if(msg.descriptionImageUrl != null) {
             self.descriptionImageUrl = msg.descriptionImageUrl;
+        }
+        if(msg.productLocation != null) {
+            self.productLocation = msg.productLocation;
         }
     }
 

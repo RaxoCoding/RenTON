@@ -110,10 +110,17 @@ describe('RentingContrat', () => {
                 productName: "Test product",
                 productDescription: "Test description",
                 productValue: toNano(1000),
-                descriptionImageUrl: "https://www.google.com"
+                descriptionImageUrl: "https://www.google.com",
+                productLocation: "London"
 
             }
         );
+
+        
+        
         console.log("NFT current Id : ", await nftCollection.getNftId());
+        expect(await nftCollection.getNftId()).toBe(BigInt(1));
+
+        const nft = await nftCollection.getNftId()
     });
 });

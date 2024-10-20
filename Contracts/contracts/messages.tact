@@ -53,6 +53,7 @@ struct NftSummary {
     productDescription: String;
     productValue: Int;
     descriptionImageUrl: String;
+    productLocation: String;
 }
 
 message InitNft {
@@ -61,6 +62,7 @@ message InitNft {
     productDescription: String;
     descriptionImageUrl: String;
     productValue: Int;
+    productLocation: String;
 }
 
 message ReceiveFees {
@@ -68,7 +70,8 @@ message ReceiveFees {
 }
 
 message ChangeOwner {
-    newOwner: Address
+    newOwner: Address;
+    nftId: Int;
 }
 
 message CheckNftExists {
@@ -80,4 +83,5 @@ message UpdateProductProperties {
     productDescription: String?;
     descriptionImageUrl: String?;
     productValue: Int?;
+    productLocation: String?;
 }
