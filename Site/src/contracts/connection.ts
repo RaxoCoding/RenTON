@@ -1,4 +1,4 @@
-import { TonClient } from "ton";
+import { TonClient } from "@ton/ton";
 
 // Initialize the TonClient instance
 const tonClient = new TonClient({

@@ -19,7 +19,6 @@ import {
   MessageCircle,
   ChevronLeft,
   ChevronRight,
-  X,
 } from "lucide-react";
 import { useProduct } from "@/hooks/useProduct";
 import ProductPageSkeleton from "./loading";
@@ -94,9 +93,9 @@ export default function ProductPage({
           <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
           <div className="flex items-center mb-4">
             <Badge variant="secondary" className="mr-2">
-              {product.pricePerHour}/hour
+              {product.pricePerHour} TON/hour
             </Badge>
-            <Badge variant="outline">{product.cautionPrice} caution</Badge>
+            <Badge variant="outline">{product.cautionPrice} TON</Badge>
           </div>
           <p className="text-muted-foreground mb-4">{product.description}</p>
           <Card>

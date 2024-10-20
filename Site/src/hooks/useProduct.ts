@@ -1,12 +1,12 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getProductById } from "@/supabase/productsQuery";
-import { FullProduct, Product } from "@/types/product";
-import { Address, fromNano } from "ton-core";
+import { FullProduct } from "@/types/product";
+import { Address, fromNano } from "@ton/core";
 import { Nft } from "@/contracts/Nft";
 import { User } from "@/types/user";
 import { supabase } from "@/lib/supabaseClient";
+import { tonClient } from "@/contracts/connection";
 
 // const productMock = {
 // 	id: '123',
@@ -40,22 +40,22 @@ export function useProduct(productAddress: string) {
   };
 
   const fetchProduct = async (): Promise<FullProduct | null> => {
-    const nftContract = new Nft(productAddress);
+    const nftContract = tonClient.open(Nft.fromAddress(Address.parse(productAddress)));
 
     const summary = await nftContract.getSummary();
 
-    const ownerAddress = Address.parse(summary.owner.toString()).toRawString();
+    const ownerAddress = summary.owner.toRawString();
 
     const owner = await fetchUser(ownerAddress);
 
     const product: FullProduct = {
-      id: productAddress,
-      name: summary.productName.toString(),
-      images: [summary.descriptionImageUrl.toString()],
-      description: summary.productDescription.toString(),
-      location: summary.productLocation.toString(),
-      pricePerHour: parseInt(fromNano(summary.productHourPrice.toString())),
-      cautionPrice: parseInt(fromNano(summary.productStake.toString())),
+      id: productAddress.toString(),
+      name: summary.productName,
+      images: [summary.descriptionImageUrl],
+      description: summary.productDescription,
+      location: summary.productLocation,
+      pricePerHour: Number(fromNano(summary.productHourPrice)),
+      cautionPrice: Number(fromNano(summary.productStake)),
       owner: {
         id: owner?.id || "0",
         username: owner?.username || "Not Found",

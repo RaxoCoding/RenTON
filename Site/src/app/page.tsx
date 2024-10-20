@@ -54,11 +54,11 @@ export default function Home() {
     <div className="flex min-h-screen w-full flex-col">
       <div className="flex flex-col sm:gap-4 px-8">
         <div className="container mx-auto">
-          <h1 className="text-4xl font-bold mb-8">Rent a Bike</h1>
+          <h1 className="text-4xl font-bold mb-8">Rent a Product</h1>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div>
-              <Label htmlFor="name">Bike Name</Label>
+              <Label htmlFor="name">Product Name</Label>
               <Input
                 id="name"
                 name="name"
@@ -125,10 +125,10 @@ export default function Home() {
                     </CardTitle>
                     <div className="flex flex-col gap-1">
                       <Badge variant="secondary" className="text-xs w-fit">
-                        ${product.pricePerHour.toFixed(2)} / hour
+                        {product.pricePerHour.toFixed(2)} TON / hour
                       </Badge>
                       <span className="text-xs text-muted-foreground">
-                        Caution: ${product.cautionPrice.toFixed(2)}
+                        Stake: {product.cautionPrice.toFixed(2)} TON
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1 truncate">

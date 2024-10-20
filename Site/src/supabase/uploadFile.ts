@@ -1,13 +1,13 @@
 import { supabase } from '../lib/supabaseClient';
 
-async function uploadImage(file : File) {
+async function uploadImage(folder: string, file : File) {
   // Check if a file was provided
   if (!file) {
     throw new Error('No file provided');
   }
 
   // Generate a unique name for the file (e.g., adding a timestamp or UUID)
-  const fileName = `${Date.now()}_${file.name}`;
+  const fileName = `${folder}/${Date.now()}_${file.name}`;
 
   // Upload the image to the 'images' bucket
   const { error } = await supabase.storage

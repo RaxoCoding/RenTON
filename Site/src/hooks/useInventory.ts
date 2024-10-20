@@ -2,17 +2,14 @@
 
 import { Product } from "@/types/product";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  getProducts,
-  addProductToSupabase,
-  updateProductInSupabase,
-} from "@/supabase/productsQuery";
 import { useAuthedUser } from "./useAuthedUser";
 import { ProductNft } from "@/contracts/ProductNft";
 import { Nft } from "@/contracts/Nft";
-import { Address, fromNano, toNano } from "ton-core";
+import { Address, fromNano, toNano } from "@ton/core";
 import { useTonConnectUI } from "@tonconnect/ui-react";
 import { sender } from "@/lib/wallet";
+import { tonClient } from "@/contracts/connection";
+import uploadImage from "@/supabase/uploadFile";
 
 interface baseSideEffects {
   onSuccess?: (data: unknown) => void;
@@ -20,8 +17,12 @@ interface baseSideEffects {
   onSettled?: (data: unknown, error: unknown) => void;
 }
 
-const productNftContract = new ProductNft(
+const productNftAddress = Address.parse(
   "EQDbqRuKhJzVePg-iEuIaz027J9esBL5v4mGT5gCV2MxO_VV"
+);
+
+const productNftContract = tonClient.open(
+  ProductNft.fromAddress(productNftAddress)
 );
 
 export function useInventory() {
@@ -32,28 +33,28 @@ export function useInventory() {
   const fetchInventory = async (): Promise<Product[] | null> => {
     if (!authedUser) throw new Error("Not authenticated!");
 
-    if (!productNftContract.isDeployed) {
+    if (!tonClient.isContractDeployed(productNftAddress)) {
       console.error("ProductNft Contract is not deployed");
       throw new Error("Unable to list products!");
     }
 
-    const productAddresses = await productNftContract.getNftAddresses();
+    const productAddresses = await productNftContract.getGetNftAddresses();
 
-    let products: Product[] = [];
-    for (const { address: productAddress } of productAddresses) {
-      const nftContract = new Nft(productAddress);
+    const products: Product[] = [];
+    for (const productAddress of productAddresses.values()) {
+      const nftContract = tonClient.open(Nft.fromAddress(productAddress));
 
       const summary = await nftContract.getSummary();
 
       const product: Product = {
-        id: productAddress,
-        name: summary.productName.toString(),
-        images: [summary.descriptionImageUrl.toString()],
-        description: summary.productDescription.toString(),
-        location: summary.productLocation.toString(),
-        pricePerHour: parseInt(fromNano(summary.productHourPrice.toString())),
-        cautionPrice: parseInt(fromNano(summary.productStake.toString())),
-        owner: Address.parse(summary.owner.toString()).toString(),
+        id: productAddress.toString(),
+        name: summary.productName,
+        images: [summary.descriptionImageUrl],
+        description: summary.productDescription,
+        location: summary.productLocation,
+        pricePerHour: Number(fromNano(summary.productHourPrice)),
+        cautionPrice: Number(fromNano(summary.productStake)),
+        owner: summary.owner.toString(),
       };
 
       if (
@@ -77,16 +78,39 @@ export function useInventory() {
 
       // await addProductToSupabase({ ...product, owner: authedUser.id });
 
-      console.log(await productNftContract.mintNft(
+      const productNftContract = tonClient.open(
+        ProductNft.fromAddress(productNftAddress)
+      );
+
+      // Upload Images
+      const images: string[] = [];
+      for (const file of product.imagesFiles) {
+        try {
+          const { publicUrl } = await uploadImage(authedUser.walletAddress, file);
+          images.push(publicUrl);
+        } catch (error) {
+          console.log("Error uploading image : ", error);
+        }
+      }
+
+      const result = await productNftContract.send(
         sender(tonConnectUI),
-        Address.parse(authedUser.walletAddress),
-        product.name,
-        product.description || "",
-        "https://mnlfkqhkiahkfkyumdgl.supabase.co/storage/v1/object/public/images/Mountainbike-fully-MTB-27-5-Zoll-Velo-Rocker-X--3--3900553759.jpg",
-        toNano(product.cautionPrice),
-        product.location || "Unknown",
-        toNano(product.pricePerHour)
-      ));
+        {
+          value: toNano("0.05"),
+        },
+        {
+          $$type: "InitNft",
+          owner: Address.parse(authedUser.walletAddress),
+          productStake: toNano(product.cautionPrice),
+          productHourPrice: toNano(product.pricePerHour),
+          productDescription: product.description || "This is a product.",
+          productName: product.name,
+          productLocation: product.location || "Unknown",
+          descriptionImageUrl: images.length > 0 ? images[0] : "",
+        }
+      );
+
+      console.log(result);
     },
     onSuccess: (_, { onSuccess }: addToInventoryVariables) => {
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
@@ -111,7 +135,8 @@ export function useInventory() {
       if (!authedUser) throw new Error("Not authenticated!");
 
       // Met à jour le produit dans Supabase
-      await updateProductInSupabase(productId, updates);
+      // await updateProductInSupabase(productId, updates);
+      console.log(updates);
 
       return productId;
     },

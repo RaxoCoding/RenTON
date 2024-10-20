@@ -113,13 +113,13 @@ export default function InventoryPage() {
                   <TableRow>
                     <TableCell>Price per hour</TableCell>
                     <TableCell className="text-right">
-                      ${product.pricePerHour}
+                      {product.pricePerHour} TON/hour
                     </TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell>Caution price</TableCell>
                     <TableCell className="text-right">
-                      ${product.cautionPrice}
+                      {product.cautionPrice} TON
                     </TableCell>
                   </TableRow>
                 </TableBody>

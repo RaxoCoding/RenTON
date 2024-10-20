@@ -1,5 +1,9 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+
 import { CHAIN, TonConnectUI, UserRejectsError } from "@tonconnect/ui-react";
-import { Sender } from "ton-core";
+import { Sender } from "@ton/core";
+import tonweb from "tonweb";
 
 export const sender = (tonConnectUI: TonConnectUI): Sender => {
   return {
@@ -12,9 +16,7 @@ export const sender = (tonConnectUI: TonConnectUI): Sender => {
             {
               address: transaction.to.toString(),
               amount: transaction.value.toString(),
-              payload: transaction.body
-                ? transaction.body.toString()
-                : undefined, // Base64-encoded BOC
+              payload: tonweb.utils.bytesToBase64(transaction.body?.toBoc(false) as unknown as Uint8Array), // Base64-encoded BOC
             },
           ],
         });
