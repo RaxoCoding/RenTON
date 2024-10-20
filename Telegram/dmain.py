@@ -118,7 +118,7 @@ async def offer(call: types.CallbackQuery):
 		"client_id":message,
 		"renter_id":infos["renter_id"],
 		"uuid":str(uuid_offer),
-		"rent_time":[]
+		"original_uuid":infos["uuid"],
 	}
 	session_tradeoffer[str(uuid_offer)] = jwt.encode(payload=payload, key=my_secret)
 	accept_deny = InlineKeyboardMarkup(row_width=1, inline_keyboard=[[
@@ -137,21 +137,27 @@ async def accept_deny(call: types.CallbackQuery):
 	call_uuid = call.data[:-4]
 	data = jwt.decode(session_tradeoffer[call_uuid], key=my_secret, algorithms=["HS256"]) 
 	if call_uuid+"-oui" == call.data:
-		message = messages.annonce_accept(call_uuid)
+		message = messages.annonce_accept(data["original_uuid"])
 		await bot.send_message(text = message, chat_id=data["client_id"])
 		accept_deny = InlineKeyboardMarkup(row_width=1, inline_keyboard=[[
 		InlineKeyboardButton(text="Send Payment link", callback_data="send_payment"),
-		InlineKeyboardButton(text="Cancel", callback_data="KEKEKEKE")
+		InlineKeyboardButton(text="Cancel", callback_data=f"{call_uuid}-clc")
 		]])
-		accept_deny.add(InlineKeyboardButton(text="Communicate with client", url=f"tg://user?id={data['client_id']}"))
+		accept_deny.add(InlineKeyboardButton(text="Communicate with client", url=f"tg://user?id={data['client_id']}&text=ntm"))
 		await bot.send_message(chat_id= data["renter_id"], text = messages.renter_accept(), reply_markup=accept_deny)
 		await call.message.delete()
 		
 
 	elif call_uuid+"-non" == call.data:
-		message = messages.annonce_deny(call_uuid)
+		message = messages.annonce_deny(data["original_uuid"])
 		await bot.send_message(text = message, chat_id=data["client_id"])
 		await call.message.answer(text = "Message sent")
+		await call.message.delete()
+
+	
+	elif call_uuid+"-clc" == call.data:
+		await bot.send_message(text = messages.cancel_offer(data["original_uuid"]), chat_id=data["client_id"])
+		await call.message.answer(text = "Cancelled!")
 		await call.message.delete()
 		
 @dp.message_handler(commands=['start', 'help']) 
