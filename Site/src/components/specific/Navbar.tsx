@@ -9,7 +9,7 @@ export function NavBar() {
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center">
           <Link href="/" className="text-xl font-bold mr-4">
-            ReTON
+            RenTON
           </Link>
         </div>
         <div className="md:flex items-center gap-4">
