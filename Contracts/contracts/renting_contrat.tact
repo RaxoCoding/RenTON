@@ -1,49 +1,6 @@
 import "@stdlib/deploy";
-
-message Agreement {
-    owner: Address;
-    customer: Address;
-    token: Int;
-    agreement_duration: Int as uint128;
-    price_per_hour: Int as uint128;
-    stake: Int as uint128;
-}
-
-message ChildResponse {
-    token_received: Int;
-}
-
-message DeleteCustomer {
-    customer: Address;
-}
-
-message AddCustomer {
-    agreement_infos: AgreementInfos;
-}
-
-// Message sent by the owner to either say the requirement is fulfilled (and stake is back to the customer) or not fulfilled and the stake go to the owner
-message OwnerRequest {
-    owner: Address;
-    customer: Address;
-    fulfilled: Bool;
-}
-
-message AgreementEndValidation {
-    owner: Address;
-    customer: Address;
-    fulfilled: Bool;
-    timeend: Int as uint128;
-}
-
-struct AgreementInfos {
-    owner: Address;
-    customer: Address;
-    token: Int;                         // TODO: change Int to NFT
-    timestart: Int as uint128;          // in seconds starting from 1st january 1970 at 0h00 UTC+0   (using Now() function)
-    agreement_duration: Int as uint128; // timestart + agreement_duration = time to give stake to Owner
-    price_per_hour: Int as uint128;     // TODO: Use appropriate token unit
-    stake: Int as uint128;              // TODO: We need to search how to use payable contract to keep it here and redistribute as needed
-}
+import "./messages.tact";
+import "./product_nft.tact";
 
 contract RentingContract with Deployable {
     agreements: map<Address, Address>;
@@ -60,7 +17,8 @@ contract RentingContract with Deployable {
             timestart: now(),
             agreement_duration: msg.agreement_duration,
             price_per_hour: msg.price_per_hour,
-            stake: msg.stake
+            stake: msg.stake,
+            has_staked: false,
         };
         let add_agreement_msg = AddCustomer{
             agreement_infos: agreement,
@@ -115,9 +73,9 @@ contract RentingContract with Deployable {
         self.notify("Agreement validation done.".asComment());
     }
 
-    receive(msg: ChildResponse){
-        dump(msg.token_received);
-    }
+    //receive(msg: ChildResponse){
+    //    dump(msg.token_received);
+    //}
 
     get fun agreements(): map<Address, Address> {
         return self.agreements;
@@ -131,7 +89,7 @@ contract RentingContract with Deployable {
 struct Array {
     customers: map<Int as uint16, AgreementInfos>; // array of Int values as a map of Ints to Ints,
                                 // with serialization of its keys to uint16 to save space
-    last_idx_free: Int = 0;            
+    last_idx_free: Int = 0;
 }
 
 // Compile-time constant upper bound for our map representing an array. (enough until now, could be higher)
@@ -193,10 +151,29 @@ contract CustomersArray {
     customers_list: Array;
     customer_id: map<Address, Int>;
     parent: Address;
+    has_paid: map<Address, Bool>;
+    nftCollection: Address;
 
     init(parent: Address) {
         self.customers_list = emptyArray();
         self.parent = parent;
+
+        // Deploy the NFT collection
+        let initNft: StateInit = initOf ProductNft(myAddress());
+        send(SendParameters{
+                to: contractAddress(initNft),
+                body: Deploy{
+                    queryId: 0
+                }.toCell(),
+                value: ton("0"),
+                mode: SendRemainingValue,
+                code: initNft.code,
+                data: initNft.data
+            }
+        );
+        self.nftCollection = contractAddress(initNft);
+
+
     }
 
     // Add a new customer
@@ -204,8 +181,44 @@ contract CustomersArray {
     receive(toAppend: AddCustomer) {
         require(sender() == self.parent, "Not authorized");
         require(self.customer_id.get(toAppend.agreement_infos.customer) == null, "This customer is already using something for this owner");
+        //// Check that token exists, receiver will raise an error if not
+        //let ret = send(SendParameters{
+        //    to: self.nftCollection,
+        //    value: ton("0"),
+        //    mode: SendIgnoreErrors,
+        //    body: CheckNftExists{
+        //        nftId: toAppend.agreement_infos.token
+        //    }.toCell()
+        //});
+        //dump("CHECK EXISTS RET : ");
+        //dump(ret);
         self.customer_id.set(toAppend.agreement_infos.customer, self.customers_list.last_idx_free);
         self.customers_list.append(toAppend.agreement_infos);
+    }
+
+    // Receive the staking
+    receive("stack"){
+        let customer_addr = sender();
+        let customer_idx = self.customer_id.get(customer_addr);
+        require(customer_idx != null, "Customer doesn't exist for this owner");
+        let _agreement = self.customers_list.customers.get(customer_idx!!);
+        require(_agreement != null, "Agreement is null for this customer");
+        // Check if the agreement time for the stake is respected and if the owner hasn't lied
+        let agreement: AgreementInfos = _agreement!!;
+        require(agreement.stake <= context().value, "Not enough money for staking");
+
+        agreement.has_staked = true;
+
+
+        
+
+
+
+        // TODO :
+        // Put stake money from customer on the contract
+        // Give NFT from owner to customer
+
+
     }
 
     receive(toDelete: DeleteCustomer){
@@ -234,9 +247,9 @@ contract CustomersArray {
         self.customers_list.deleteAll();
     }
 
-    receive(msg: Agreement){
-        self.reply(ChildResponse{token_received: msg.token}.toCell());
-    }
+    //receive(msg: Agreement){
+    //    self.reply(ChildResponse{token_received: msg.token}.toCell());
+    //}
 
     receive(request: AgreementEndValidation){
         require(sender() == self.parent, "Not authorized");
@@ -247,6 +260,9 @@ contract CustomersArray {
         // Check if the agreement time for the stake is respected and if the owner hasn't lied
         let agreement: AgreementInfos = _agreement!!;
         require( (agreement.timestart + agreement.agreement_duration < request.timeend) == request.fulfilled, "AgreementEndValidation doesn't correspond to the given fulfilled stake time");
+
+
+
 
         // If we're here, then we need to process; 
         // TODO: do the following lines with the NFT and TON tokens
@@ -265,5 +281,9 @@ contract CustomersArray {
     get fun customers_agreement() : map<Int as uint16, AgreementInfos> {
         dump(self.customers_list.last_idx_free);
         return self.customers_list.customers;
+    }
+
+    get fun nftCollectionAddress(): Address {
+        return self.nftCollection;
     }
 }
