@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/tact-lang/tact/refs/heads/main/schemas/configSchema.json",
+  "projects": [
+    {
+      "name": "product_nft",
+      "path": "./src/contracts/source/product_nft.tact",
+      "output": "./src/contracts/compiled/product_nft"
+    }
+  ]
+}

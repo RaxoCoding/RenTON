@@ -21,5 +21,3 @@ export function generateUsername(): string {
 
   return `${randomAdjective}${randomNoun}${randomNumber}`;
 }
-
-console.log(generateUsername()); // Example: BraveTiger42

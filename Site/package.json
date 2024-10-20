@@ -6,9 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "compile_contracts": "tact --config ./tact.config.json"
   },
   "dependencies": {
+    "@fotonjs/core": "^0.0.9",
     "@radix-ui/react-alert-dialog": "^1.1.2",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.2",
@@ -31,9 +33,13 @@
     "react-dom": "^18",
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.5.4",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "ton": "^13.9.0",
+    "ton-core": "^0.53.0",
+    "tonweb": "^0.0.66"
   },
   "devDependencies": {
+    "@tact-lang/compiler": "^1.5.2",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
