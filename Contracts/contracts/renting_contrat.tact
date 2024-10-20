@@ -208,15 +208,22 @@ contract CustomersArray {
         require(agreement.stake <= context().value, "Not enough money for staking");
 
         agreement.has_staked = true;
-
-
-        
-
-
+        agreement.timestart = now();
 
         // TODO :
         // Put stake money from customer on the contract
         // Give NFT from owner to customer
+        send(
+            SendParameters{
+                to: self.nftCollection,
+                body: ChangeOwner{
+                    nftId: agreement.token,
+                    newOwner: agreement.customer
+                },
+                mode: 0,
+                value: ton("0.1")
+            }
+        );
 
 
     }

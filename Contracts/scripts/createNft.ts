@@ -27,7 +27,10 @@ export async function run(provider: NetworkProvider, args: string[]) {
             owner: test_pub_address,
             productValue: toNano(10),
             productDescription: "Test description",
-            productName: "Test product"
+            productName: "Test product",
+            productLocation: "Berlin",
+            descriptionImageUrl: "https://www.google.com"
+            
         }
     );
 

@@ -16,8 +16,8 @@ export async function run(provider: NetworkProvider) {
         {
             $$type: "InitNft",
             owner: test_pub_address,
-            customer: test_pub_address,
-            productStake: BigInt(randomInt(100)),
+            productValue: toNano("1000"),
+            productLocation: "Berlin",
             productName: "Test product ",
             productDescription: "Test description ",
             descriptionImageUrl: "https://iheartcraftythings.com/wp-content/uploads/2021/06/9.jpg"
