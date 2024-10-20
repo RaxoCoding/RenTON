@@ -106,7 +106,7 @@ contract Nft with Deployable {
     receive(msg: InitNft) {
         dump("NFT init start");
         let ctx = context();
-        require(self.parent_contract == ctx.sender, "Only parent can init NFT");
+        //require(self.parent_contract == ctx.sender, "Only parent can init NFT");
         require(self.initDone == false, "Init already done");
         self.owner =  msg.owner;
         self.productName =  msg.productName;

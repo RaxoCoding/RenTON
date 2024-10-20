@@ -61,10 +61,10 @@ describe('RentingContrat', () => {
                 $$type: "Agreement",
                 owner: test_owner_wallet.getSender().address,
                 customer: test_customer_wallet.getSender().address,
-                token: BigInt(3),
+                token: toNano(3),
                 agreement_duration: BigInt(4),
                 price_per_hour: BigInt(5),
-                stake: BigInt(6),
+                stake: toNano(6),
             }
         );
         
@@ -124,5 +124,44 @@ describe('RentingContrat', () => {
         const nftId = await nftCollection.getNftId();
         const nft = blockchain.openContract(Nft.fromAddress(await nftCollection.getGetNftAddress(nftId)));
         console.log("Nft summary : ", await nft.getSummary());
+
+
+
+
+        /////// Test stake
+
+        let stake = toNano("1");
+        let duration = BigInt(2);
+        let pricePerHour = toNano("10");
+        
+        customersContract.send(
+            test_customer_wallet.getSender(),
+            {
+                value: stake,
+            },
+            null
+        );
+
+
+        rentingContrat.send(
+            test_owner_wallet.getSender(),
+            {
+                value: toNano("0.1")
+            },
+            {
+                $$type: "OwnerRequest",
+                owner: test_owner_wallet.address,
+                customer: test_customer_wallet.address,
+                fulfilled: true,
+            }
+        )        
+
+        customersContract.send(
+            test_customer_wallet.getSender(),
+            {
+                value: duration*pricePerHour,
+            },
+            null
+        );
     });
 });

@@ -4,10 +4,12 @@ struct AgreementInfos {
     customer: Address;
     token: Int;
     timestart: Int as uint128;          // in seconds starting from 1st january 1970 at 0h00 UTC+0   (using Now() function)
+    timeend: Int as uint128;
     agreement_duration: Int as uint128; // timestart + agreement_duration = time to give stake to Owner
     price_per_hour: Int as uint128;     // TODO: Use appropriate token unit
     stake: Int as uint128;              // TODO: We need to search how to use payable contract to keep it here and redistribute as needed
-    has_staked: Bool;
+    has_staked: Bool;               
+    owner_claimed: Bool;                // Allow the know the state of the Agreement, if owner_claimed then the TON tokens sent by the customers isn't for staking but to pay the rent
 }
 
 message Agreement {

@@ -15,10 +15,12 @@ contract RentingContract with Deployable {
             customer: msg.customer,
             token: msg.token,
             timestart: now(),
+            timeend: 0,
             agreement_duration: msg.agreement_duration,
             price_per_hour: msg.price_per_hour,
             stake: msg.stake,
             has_staked: false,
+            owner_claimed: false,
         };
         let add_agreement_msg = AddCustomer{
             agreement_infos: agreement,
@@ -198,23 +200,30 @@ contract CustomersArray {
     }
 
     // Receive the staking
-    receive("stack"){
+    receive(){
+        dump("Starting staking");
         let customer_addr = sender();
         let customer_idx = self.customer_id.get(customer_addr);
-        require(customer_idx != null, "Customer doesn't exist for this owner");
+        //require(customer_idx != null, "Customer doesn't exist for this owner");
         let _agreement = self.customers_list.customers.get(customer_idx!!);
-        require(_agreement != null, "Agreement is null for this customer");
+        //require(_agreement != null, "Agreement is null for this customer");
         // Check if the agreement time for the stake is respected and if the owner hasn't lied
         let agreement: AgreementInfos = _agreement!!;
-        require(agreement.stake <= context().value, "Not enough money for staking");
+        dump("Pre validation done");
 
-        agreement.has_staked = true;
-        agreement.timestart = now();
+        //require((!agreement.has_staked && !agreement.owner_claimed) || (agreement.has_staked && agreement.owner_claimed), "User can't send tokens between states of staking and owner claim");
 
-        // TODO :
-        // Put stake money from customer on the contract
-        // Give NFT from owner to customer
-        send(
+        
+
+        // User sending tokens to stake
+        if (!agreement.has_staked && !agreement.owner_claimed){
+            require(agreement.stake <= context().value, "Not enough money for staking");
+            agreement.has_staked = true;
+            self.customers_list.customers.set(customer_idx!!, agreement);
+
+            // TODO :
+            // Give NFT from owner to customer
+            dump("Giving NFT to customer");
             SendParameters{
                 to: self.nftCollection,
                 body: ChangeOwner{
@@ -222,11 +231,59 @@ contract CustomersArray {
                     newOwner: agreement.customer
                 }.toCell(),
                 mode: 0,
-                value: ton("0.1")
-            }
-        );
+                value: ton("0.1"),
+            };
+            
+        }
+        // User sending tokens to pay 
+        else if (agreement.has_staked && agreement.owner_claimed) {
+            let time_elipsed = (agreement.timeend - agreement.timestart);
+            let time_elipsed_in_hour = time_elipsed / 3600;
+            let rest = time_elipsed - (time_elipsed_in_hour*3600); // in second
+            let money_needed = time_elipsed_in_hour * agreement.price_per_hour + (rest * agreement.price_per_hour) / 3600 ;
+            require(context().value >= money_needed, "Not enough money to pay the rent");
+            
+            // The user has sent the money, everything is good we can send back NFT and staking, and transfer the payment to the owner
+            dump("Sending rent money to owner");
+            send(SendParameters{
+                    to: agreement.owner,
+                    bounce: true,
+                    value: money_needed,              
+                    mode: 0
+                }
+            );
+            dump("Sending stake back to customer");
+            send(SendParameters{
+                    to: customer_addr,
+                    bounce: true,
+                    value: agreement.stake,              
+                    mode: 0
+                }
+            );
 
+            // 
+            // Give back NFT from customer to owner
+            send(SendParameters{
+                to: self.nftCollection,
+                body: ChangeOwner{
+                    nftId: agreement.token,
+                    newOwner: agreement.owner
+                }.toCell(),
+                mode: SendRemainingValue,
+                value: ton("0"),
+            });
 
+            // Delete user so he can re-buy a rent
+            send(SendParameters{
+                to: myAddress(),
+                body: DeleteCustomer{
+                    customer: customer_addr
+                }.toCell(),
+                value: ton("0"),              // pay for message and potential deployment
+                mode: SendRemainingValue
+            });
+
+        }
     }
 
     receive(toDelete: DeleteCustomer){
@@ -269,21 +326,22 @@ contract CustomersArray {
         let agreement: AgreementInfos = _agreement!!;
         require( (agreement.timestart + agreement.agreement_duration < request.timeend) == request.fulfilled, "AgreementEndValidation doesn't correspond to the given fulfilled stake time");
 
-
-
-
-        // If we're here, then we need to process; 
-        // TODO: do the following lines with the NFT and TON tokens
-        // If fulfilled, then resend the NFT to owner and the stake to customer
-        // otherwise, send the stake to the owner
-
-        if(request.fulfilled){
-            
+        // If we're here, then we just need to change the timeend and the owner_claimed, so the user can perform the payment OR depending whether the time s exceeded, to transfer the stake to owner
+        agreement.owner_claimed = true;
+        agreement.timeend = request.timeend;
+        if(!request.fulfilled){
+            send(SendParameters{
+                    to: request.owner,
+                    bounce: true,
+                    value: agreement.stake,              
+                    mode: SendRemainingValue + SendIgnoreErrors
+                }
+            );
+            agreement.has_staked = false; // So the user cannot perform the payment later, and the stake isn't anymore in the pool
+            // NOTE: The NFT will never returns to the owner and will be frozen in this pool (since the user has not returned it that seems logical)
+            // TODO: We can do something if the user returns the product too late (like transferring back to the owner the NFT and asking for fees payment and BONUS for user)
         }
-        // Here we don't delete the customer, so he can't buy to this owner anymore (because in add there is a check to ensure the null for the mapping customer_id) 
-        else {
-
-        }
+        self.customers_list.customers.set(customer_idx!!, agreement);
     }
 
     get fun customers_agreement() : map<Int as uint16, AgreementInfos> {
