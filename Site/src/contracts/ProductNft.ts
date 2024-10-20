@@ -10,12 +10,7 @@ import {
   toNano,
   TonClient
 } from "ton"; // Make sure to install 'ton-core' package
-
-// Initialize the TonClient instance
-const tonClient = new TonClient({
-  endpoint: "https://testnet.toncenter.com/api/v2/jsonRPC",
-  apiKey: "3522ef9c302f497b20f81f07d384cf77bbe35c0ef84a77f362b598e3214da543",
-});
+import { tonClient } from "./connection";
 
 // Define the types used in the contract
 type InitNft = {
@@ -133,7 +128,7 @@ export class ProductNft {
     await this.isDeployed();
 
     const result = await this.client.runMethod(this.address, "getNftAddresses");
-    console.log(result, result.stack);
+
     if (result && result.stack) {
       let addresses = Dictionary.loadDirect(
         Dictionary.Keys.BigInt(257),
