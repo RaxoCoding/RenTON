@@ -36,6 +36,7 @@ export default function InventoryPage() {
         pricePerHour: newProduct.pricePerHour,
         cautionPrice: newProduct.cautionPrice,
         imagesFiles: newProduct.imagesFiles,
+        location: newProduct.location
       },
       onSuccess() {
         setIsDialogOpen(false);

@@ -22,6 +22,7 @@ type ProductFormProps = {
 
 export function ProductForm({ product, onSubmit, onCancel, isSubmitting }: ProductFormProps) {
   const [name, setName] = useState(product?.name || "");
+  const [location, setLocation] = useState(product?.location || "");
   const [description, setDescription] = useState(product?.description || "");
   const [pricePerHour, setPricePerHour] = useState(
     product?.pricePerHour.toString() || ""
@@ -42,7 +43,8 @@ export function ProductForm({ product, onSubmit, onCancel, isSubmitting }: Produ
       images: images.filter(x => !x.includes("blob")),
       pricePerHour: parseFloat(pricePerHour),
       cautionPrice: parseFloat(cautionPrice),
-			imagesFiles
+			imagesFiles,
+      location
     });
   };
 
@@ -95,6 +97,17 @@ export function ProductForm({ product, onSubmit, onCancel, isSubmitting }: Produ
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            className="col-span-3"
+          />
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="location" className="text-right">
+            Location
+          </Label>
+          <Input
+            id="location"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
             className="col-span-3"
           />
         </div>

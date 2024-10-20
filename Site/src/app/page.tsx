@@ -120,7 +120,7 @@ export default function Home() {
                     </div>
                   </CardHeader>
                   <CardContent className="p-2">
-                    <CardTitle className="text-sm font-medium mb-1">
+                    <CardTitle className="text-sm font-medium mb-1 truncate">
                       {product.name}
                     </CardTitle>
                     <div className="flex flex-col gap-1">
@@ -131,7 +131,7 @@ export default function Home() {
                         Caution: ${product.cautionPrice.toFixed(2)}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground mt-1 truncate">
                       Owner: {product.owner}
                     </p>
                   </CardContent>

@@ -1,5 +1,4 @@
 // @ts-nocheck
-
 import {
   Address,
   Cell,
@@ -8,19 +7,20 @@ import {
   TupleBuilder,
   Sender,
   toNano,
-  TonClient
-} from "ton"; // Make sure to install 'ton-core' package
+  TonClient,
+  TupleReader,
+} from "ton"; // Ensure you have the 'ton' package installed
 import { tonClient } from "./connection";
 
 // Define the types used in the contract
 type InitNft = {
   $$type: "InitNft";
   owner: Address;
-  customer: Address;
-  productStake: bigint;
   productName: string;
   productDescription: string;
   descriptionImageUrl: string;
+  productValue: bigint;
+  productLocation: string;
 };
 
 type Deploy = {
@@ -49,21 +49,25 @@ export class ProductNft {
   // Helper function to serialize InitNft messages
   private storeInitNft(message: InitNft): Cell {
     const builder = new Builder();
-    // Assuming the op code for InitNft is 3844277486 (from your contract)
-    builder.storeUint(3844277486, 32); // op code for InitNft
+    builder.storeUint(3476875793, 32); // Updated op code for InitNft
     builder.storeAddress(message.owner);
-    builder.storeAddress(message.customer);
-    builder.storeCoins(message.productStake);
     builder.storeStringRefTail(message.productName);
     builder.storeStringRefTail(message.productDescription);
-    builder.storeStringRefTail(message.descriptionImageUrl);
+
+    // Create a new builder for the reference cell
+    const refBuilder = new Builder();
+    refBuilder.storeStringRefTail(message.descriptionImageUrl);
+    refBuilder.storeInt(message.productValue, 257);
+    refBuilder.storeStringRefTail(message.productLocation);
+
+    builder.storeRef(refBuilder.endCell());
     return builder.endCell();
   }
 
   // Helper function to serialize Deploy messages
   private storeDeploy(message: Deploy): Cell {
     const builder = new Builder();
-    builder.storeUint(2490013878, 32); // op code for Deploy (replace if different)
+    builder.storeUint(2490013878, 32); // Op code for Deploy (unchanged)
     builder.storeUint(message.queryId, 64);
     return builder.endCell();
   }
@@ -97,30 +101,26 @@ export class ProductNft {
   async mintNft(
     via: Sender,
     owner: Address,
-    customer: Address,
-    productStake: bigint,
     productName: string,
     productDescription: string,
     descriptionImageUrl: string,
+    productValue: bigint,
+    productLocation: string,
     amount: bigint = toNano("0.05") // Default amount to send
   ) {
     // Create the InitNft message
     const message: InitNft = {
       $$type: "InitNft",
       owner,
-      customer,
-      productStake,
       productName,
       productDescription,
       descriptionImageUrl,
+      productValue,
+      productLocation,
     };
 
     // Send the message to the contract
-    await this.send(
-      via,
-      { value: amount, bounce: false },
-      message
-    );
+    await this.send(via, { value: amount, bounce: false }, message);
   }
 
   // Method to get NFT addresses
@@ -130,13 +130,18 @@ export class ProductNft {
     const result = await this.client.runMethod(this.address, "getNftAddresses");
 
     if (result && result.stack) {
-      let addresses = Dictionary.loadDirect(
+      const nftDictCell = result.stack.readCellOpt();
+      if (!nftDictCell) {
+        throw new Error("No NFT addresses found.");
+      }
+
+      const addresses = Dictionary.loadDirect(
         Dictionary.Keys.BigInt(257),
         Dictionary.Values.Address(),
-        result.stack.readCellOpt()
+        nftDictCell
       );
 
-      const nftList: { id: bigint; address: string }[] = [];  
+      const nftList: { id: bigint; address: string }[] = [];
       for (let [id, addr] of addresses) {
         nftList.push({ id: id, address: addr.toString() });
       }
@@ -147,14 +152,11 @@ export class ProductNft {
     }
   }
 
-  // Add other methods as needed, including helper functions
-  // For example, getNftAddressById, getNftInit, etc.
-
   // Helper function to call contract methods
   private async callGetMethod(
     methodName: string,
     params: TupleBuilder
-  ): Promise<any> {
+  ): Promise<TupleReader> {
     const result = await this.client.runMethod(
       this.address,
       methodName,
@@ -184,8 +186,7 @@ export class ProductNft {
     params.writeNumber(nftId);
 
     const stack = await this.callGetMethod("getNftInit", params);
-    // Process the stack to extract the data
-    // Implement according to your contract's return structure
+    // Process the stack to extract the data according to your contract's return structure
     return stack;
   }
 }
