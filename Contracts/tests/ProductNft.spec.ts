@@ -45,7 +45,7 @@ describe('ProductNft', () => {
     });
     it("", async () => {})
 
-    /*it('test token creation', async () => {
+    it('test token creation', async () => {
         
         let nftId = await productNft.getNftId();
         console.log(nftId);
@@ -62,7 +62,9 @@ describe('ProductNft', () => {
                     productName: "Test product "+i,
                     productDescription: "Test description "+i,
                     descriptionImageUrl: "https://iheartcraftythings.com/wp-content/uploads/2021/06/9.jpg",
-                    productValue: toNano(1000)
+                    productStake: toNano(1000),
+                    productLocation: "Toulouse",
+                    productHourPrice: toNano(1)
                 }
             )
             //printTransactionFees(res.transactions);   
@@ -80,5 +82,5 @@ describe('ProductNft', () => {
             const nft = blockchain.openContract(Nft.fromAddress(nft_addr));
             console.log("Test get : ", await nft.getSummary());
         }
-    });*/
+    });
 });

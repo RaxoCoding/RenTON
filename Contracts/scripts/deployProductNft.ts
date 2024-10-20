@@ -16,11 +16,12 @@ export async function run(provider: NetworkProvider) {
         {
             $$type: "InitNft",
             owner: test_pub_address,
-            productValue: toNano("1000"),
+            productStake: toNano("1000"),
             productLocation: "Berlin",
             productName: "Test product ",
             productDescription: "Test description ",
-            descriptionImageUrl: "https://iheartcraftythings.com/wp-content/uploads/2021/06/9.jpg"
+            descriptionImageUrl: "https://iheartcraftythings.com/wp-content/uploads/2021/06/9.jpg",
+            productHourPrice: toNano(10),
         }
     );
 

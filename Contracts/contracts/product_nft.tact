@@ -14,18 +14,20 @@ contract ProductNft with Deployable {
     receive(msg: InitNft) {
         self.mint(msg);
         self.reply("Done creation".asComment());
+        //emit(_nftId.asComment());
     }
 
-    fun mint(msg: InitNft) {
+    fun mint(msg: InitNft): Int {
         dump("Check before minting");
         let ctx: Context = context();
         //require(ctx.value <= minNftValue, "Insufficient initial NFT value");
         //require(ctx.sender == self.productOwner, "Only owner can deploy NFT");
         self.curNftId = self.curNftId + 1;
-        let init: StateInit = self.getNftInit(self.curNftId);
+        let _nftId = self.curNftId;
+        let init: StateInit = self.getNftInit(_nftId);
         dump("Start minting");
         send(SendParameters{
-            to: self.getNftAddress(self.curNftId),
+            to: self.getNftAddress(_nftId),
             body: msg.toCell(),
             mode: SendRemainingValue,
             value: ton("0"),
@@ -33,6 +35,8 @@ contract ProductNft with Deployable {
             data: init.data
         });
         dump("Minting done");
+
+        return _nftId;
     }
 
     get fun getNftAddress(_nftId: Int): Address {
@@ -90,8 +94,9 @@ contract Nft with Deployable {
     productName: String?;
     productDescription: String?;
     descriptionImageUrl: String?;
-    productValue: Int?;
+    productStake: Int?;
     productLocation: String?;
+    productHourPrice: Int?;
 
     init(_parent_contract: Address, _value: Int) {
         dump("NFT creation");
@@ -101,32 +106,34 @@ contract Nft with Deployable {
     receive(msg: InitNft) {
         dump("NFT init start");
         let ctx = context();
-        require(self.parent_contract == ctx.sender, "Only parent can init NFT");
+        //require(self.parent_contract == ctx.sender, "Only parent can init NFT");
         require(self.initDone == false, "Init already done");
         self.owner =  msg.owner;
         self.productName =  msg.productName;
         self.productDescription =  msg.productDescription;
         self.descriptionImageUrl =  msg.descriptionImageUrl;
-        self.productValue = msg.productValue;
+        self.productStake = msg.productStake;
+        self.productLocation = msg.productLocation;
+        self.productHourPrice = msg.productHourPrice;
         self.initDone = true;
-        self.productLocation == msg.productLocation;
     }
 
     get fun summary(): NftSummary {
         require(self.initDone == true, "Not initialized");
         return NftSummary{
             owner: self.owner!!,
-            productValue: self.productValue!!,
+            productStake: self.productStake!!,
             productName: self.productName!!,
             productDescription: self.productDescription!!,
             descriptionImageUrl: self.descriptionImageUrl!!,
+            productHourPrice: self.productHourPrice!!,
             productLocation: self.productLocation!!
         };
     }
 
     receive(msg: UpdateProductProperties) {
-        if(msg.productValue != null) {
-            self.productValue = msg.productValue
+        if(msg.productStake != null) {
+            self.productStake = msg.productStake
         }
         if(msg.productName != null) {
             self.productName = msg.productName;
@@ -139,6 +146,9 @@ contract Nft with Deployable {
         }
         if(msg.productLocation != null) {
             self.productLocation = msg.productLocation;
+        }
+        if(msg.productHourPrice != null) {
+            self.productHourPrice = msg.productHourPrice;
         }
     }
 
