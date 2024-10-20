@@ -13,11 +13,27 @@ describe('RentingContrat', () => {
     beforeEach(async () => {
         blockchain = await Blockchain.create();
 
-        rentingContrat = blockchain.openContract(await RentingContract.fromInit());
-
         deployer = await blockchain.treasury('deployer');
 
-        const deployResult = await rentingContrat.send(
+
+        /////// Deploy nftProduct
+        let productNft = blockchain.openContract(await ProductNft.fromInit(deployer.address));
+
+        const deployResult1 = await productNft.send(
+            deployer.getSender(),
+            {
+                value: toNano('0.05'),
+            },
+            {
+                $$type: 'Deploy',
+                queryId: 0n,
+            }
+        );
+        ///////
+        
+        rentingContrat = blockchain.openContract(await RentingContract.fromInit(productNft.address));
+
+        const deployResult2 = await rentingContrat.send(
             deployer.getSender(),
             {
                 value: toNano('0.05'),
@@ -28,7 +44,7 @@ describe('RentingContrat', () => {
             }
         );
 
-        expect(deployResult.transactions).toHaveTransaction({
+        expect(deployResult2.transactions).toHaveTransaction({
             from: deployer.address,
             to: rentingContrat.address,
             deploy: true,

@@ -72,7 +72,7 @@ contract ProductNft with Deployable {
     }
 
     receive(msg: CheckNftExists) {
-        //require(self.nftExists(msg.nftId), "Token does not exists");
+        require(self.nftExists(msg.nftId), "Token does not exists");
     }
 
     receive(msg: ChangeOwner) {
@@ -153,7 +153,7 @@ contract Nft with Deployable {
     }
 
     receive(msg: ChangeOwner) {
-        require(context().sender == self.parent_contract, "Only parent can end the rent");
+        require(context().sender == self.owner, "Only parent can end the rent");
         self.owner = msg.newOwner;
     }
 }

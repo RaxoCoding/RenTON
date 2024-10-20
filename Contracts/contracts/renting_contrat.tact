@@ -4,9 +4,11 @@ import "./product_nft.tact";
 
 contract RentingContract with Deployable {
     agreements: map<Address, Address>;
+    nftCollectionAddress: Address;
 
-    init(){
+    init(nftCollectionAddress: Address){
         self.agreements = emptyMap();
+        self.nftCollectionAddress = nftCollectionAddress;
     }
 
     receive(msg: Agreement) {
@@ -26,7 +28,7 @@ contract RentingContract with Deployable {
             agreement_infos: agreement,
         };
         if (self.agreements.get(agreement.owner) == null){
-            let init: StateInit = initOf CustomersArray(myAddress());
+            let init: StateInit = initOf CustomersArray(self.nftCollectionAddress, myAddress());
             let addr: Address = contractAddress(init);
             send(SendParameters{
                 to: addr,
@@ -154,29 +156,13 @@ contract CustomersArray {
     customer_id: map<Address, Int>;
     parent: Address;
     has_paid: map<Address, Bool>;
-    nftCollection: Address;
+    nftCollectionAddress: Address;
 
-    init(parent: Address) {
+    init(_nftCollectionAddress: Address, parent: Address) {
         dump("CustomersArray init");
         self.customers_list = emptyArray();
         self.parent = parent;
-
-        // Deploy the NFT collection
-        let initNft: StateInit = initOf ProductNft(myAddress());
-        send(SendParameters{
-                to: contractAddress(initNft),
-                body: Deploy{
-                    queryId: 0
-                }.toCell(),
-                value: ton("0"),
-                mode: SendRemainingValue,
-                code: initNft.code,
-                data: initNft.data
-            }
-        );
-        self.nftCollection = contractAddress(initNft);
-
-
+        self.nftCollectionAddress = _nftCollectionAddress;
     }
 
     // Add a new customer
@@ -184,17 +170,6 @@ contract CustomersArray {
     receive(toAppend: AddCustomer) {
         require(sender() == self.parent, "Not authorized");
         require(self.customer_id.get(toAppend.agreement_infos.customer) == null, "This customer is already using something for this owner");
-        //// Check that token exists, receiver will raise an error if not
-        //let ret = send(SendParameters{
-        //    to: self.nftCollection,
-        //    value: ton("0"),
-        //    mode: SendIgnoreErrors,
-        //    body: CheckNftExists{
-        //        nftId: toAppend.agreement_infos.token
-        //    }.toCell()
-        //});
-        //dump("CHECK EXISTS RET : ");
-        //dump(ret);
         self.customer_id.set(toAppend.agreement_infos.customer, self.customers_list.last_idx_free);
         self.customers_list.append(toAppend.agreement_infos);
     }
@@ -204,14 +179,14 @@ contract CustomersArray {
         dump("Starting staking");
         let customer_addr = sender();
         let customer_idx = self.customer_id.get(customer_addr);
-        //require(customer_idx != null, "Customer doesn't exist for this owner");
+        require(customer_idx != null, "Customer doesn't exist for this owner");
         let _agreement = self.customers_list.customers.get(customer_idx!!);
-        //require(_agreement != null, "Agreement is null for this customer");
+        require(_agreement != null, "Agreement is null for this customer");
         // Check if the agreement time for the stake is respected and if the owner hasn't lied
         let agreement: AgreementInfos = _agreement!!;
         dump("Pre validation done");
 
-        //require((!agreement.has_staked && !agreement.owner_claimed) || (agreement.has_staked && agreement.owner_claimed), "User can't send tokens between states of staking and owner claim");
+        require((!agreement.has_staked && !agreement.owner_claimed) || (agreement.has_staked && agreement.owner_claimed), "User can't send tokens between states of staking and owner claim");
 
         
 
@@ -225,7 +200,7 @@ contract CustomersArray {
             // Give NFT from owner to customer
             dump("Giving NFT to customer");
             SendParameters{
-                to: self.nftCollection,
+                to: self.nftCollectionAddress,
                 body: ChangeOwner{
                     nftId: agreement.token,
                     newOwner: agreement.customer
@@ -243,6 +218,18 @@ contract CustomersArray {
             let money_needed = time_elipsed_in_hour * agreement.price_per_hour + (rest * agreement.price_per_hour) / 3600 ;
             require(context().value >= money_needed, "Not enough money to pay the rent");
             
+            // 
+            // Give back NFT from customer to owner
+            send(SendParameters{
+                to: self.nftCollectionAddress,
+                body: ChangeOwner{
+                    nftId: agreement.token,
+                    newOwner: agreement.owner
+                }.toCell(),
+                mode: SendRemainingValue,
+                value: ton("0"),
+            });
+
             // The user has sent the money, everything is good we can send back NFT and staking, and transfer the payment to the owner
             dump("Sending rent money to owner");
             send(SendParameters{
@@ -260,18 +247,6 @@ contract CustomersArray {
                     mode: 0
                 }
             );
-
-            // 
-            // Give back NFT from customer to owner
-            send(SendParameters{
-                to: self.nftCollection,
-                body: ChangeOwner{
-                    nftId: agreement.token,
-                    newOwner: agreement.owner
-                }.toCell(),
-                mode: SendRemainingValue,
-                value: ton("0"),
-            });
 
             // Delete user so he can re-buy a rent
             send(SendParameters{
@@ -350,6 +325,6 @@ contract CustomersArray {
     }
 
     get fun nftCollectionAddress(): Address {
-        return self.nftCollection;
+        return self.nftCollectionAddress;
     }
 }
