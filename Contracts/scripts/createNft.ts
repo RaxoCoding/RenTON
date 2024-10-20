@@ -25,11 +25,12 @@ export async function run(provider: NetworkProvider, args: string[]) {
         {
             $$type: 'InitNft',
             owner: test_pub_address,
-            productValue: toNano(10),
+            productStake: toNano(10),
             productDescription: "Test description",
             productName: "Test product",
             productLocation: "Berlin",
-            descriptionImageUrl: "https://www.google.com"
+            descriptionImageUrl: "https://www.google.com",
+            productHourPrice: toNano(1)
             
         }
     );

@@ -76,7 +76,10 @@ contract ProductNft with Deployable {
     }
 
     receive(msg: ChangeOwner) {
+        dump("Change Owner on ProductNft");
+
         let nftAddress: Address = self.getNftAddress(msg.nftId);
+        msg.originalSender = context().sender;
         send(SendParameters{
             to: nftAddress,
             body: msg.toCell(),
@@ -153,7 +156,9 @@ contract Nft with Deployable {
     }
 
     receive(msg: ChangeOwner) {
-        require(context().sender == self.owner, "Only parent can end the rent");
+        dump("Change owner called in NFT");
+        require(context().sender == self.parent_contract, "Only parent can change the owner");
+        require(msg.originalSender == self.owner, "Only Owner can change ownership");
         self.owner = msg.newOwner;
     }
 }

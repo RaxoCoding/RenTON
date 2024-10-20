@@ -76,6 +76,7 @@ message ReceiveFees {
 message ChangeOwner {
     newOwner: Address;
     nftId: Int;
+    originalSender: Address?;
 }
 
 message CheckNftExists {

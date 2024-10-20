@@ -11,6 +11,18 @@ contract RentingContract with Deployable {
         self.nftCollectionAddress = nftCollectionAddress;
     }
 
+    receive("TEST") {
+        send(SendParameters{
+            to: self.nftCollectionAddress,
+            body: ChangeOwner{
+                nftId: 1,
+                newOwner: myAddress()
+            }.toCell(),
+            value: ton("0"),
+            mode: SendRemainingValue
+        });
+    }
+
     receive(msg: Agreement) {
         let agreement = AgreementInfos{
             owner: msg.owner,
@@ -192,22 +204,24 @@ contract CustomersArray {
 
         // User sending tokens to stake
         if (!agreement.has_staked && !agreement.owner_claimed){
+            dump("Receiving customer stake");
             require(agreement.stake <= context().value, "Not enough money for staking");
             agreement.has_staked = true;
             self.customers_list.customers.set(customer_idx!!, agreement);
 
-            // TODO :
-            // Give NFT from owner to customer
-            dump("Giving NFT to customer");
+            // 1. Owner give NFT to contract
+            // 2. Must check transfer has been done
+            dump("Checking NFT is owned by contract");
             SendParameters{
                 to: self.nftCollectionAddress,
                 body: ChangeOwner{
                     nftId: agreement.token,
-                    newOwner: agreement.customer
+                    newOwner: myAddress()
                 }.toCell(),
-                mode: 0,
+                mode: SendRemainingValue,
                 value: ton("0.1"),
             };
+            dump("Success checking NFT ");
             
         }
         // User sending tokens to pay 
@@ -224,7 +238,8 @@ contract CustomersArray {
                 to: self.nftCollectionAddress,
                 body: ChangeOwner{
                     nftId: agreement.token,
-                    newOwner: agreement.owner
+                    newOwner: agreement.owner,
+                    originalSender: null
                 }.toCell(),
                 mode: SendRemainingValue,
                 value: ton("0"),

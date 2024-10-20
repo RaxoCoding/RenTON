@@ -4,11 +4,13 @@ import { RentingContract } from '../wrappers/RentingContrat';
 import '@ton/test-utils';
 import { CustomersArray } from '../build/RentingContrat/tact_CustomersArray';
 import { ProductNft, Nft } from '../wrappers/ProductNft';
+import { sleep } from '@ton/blueprint';
 
 describe('RentingContrat', () => {
     let blockchain: Blockchain;
     let deployer: SandboxContract<TreasuryContract>;
     let rentingContrat: SandboxContract<RentingContract>;
+    let productNft: SandboxContract<ProductNft>;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
@@ -17,7 +19,7 @@ describe('RentingContrat', () => {
 
 
         /////// Deploy nftProduct
-        let productNft = blockchain.openContract(await ProductNft.fromInit(deployer.address));
+        productNft = blockchain.openContract(await ProductNft.fromInit(deployer.address));
 
         const deployResult1 = await productNft.send(
             deployer.getSender(),
@@ -77,7 +79,7 @@ describe('RentingContrat', () => {
                 $$type: "Agreement",
                 owner: test_owner_wallet.getSender().address,
                 customer: test_customer_wallet.getSender().address,
-                token: toNano(3),
+                token: toNano(1),
                 agreement_duration: BigInt(4),
                 price_per_hour: BigInt(5),
                 stake: toNano(6),
@@ -126,7 +128,7 @@ describe('RentingContrat', () => {
                 productName: "Test product",
                 productDescription: "Test description",
                 productStake: toNano(1000),
-                descriptionImageUrl: "https://www.google.com",
+                descriptionImageUrl: "https://wwwgoogle.com",
                 productLocation: "London",
                 productHourPrice: toNano(1)
 
@@ -139,18 +141,41 @@ describe('RentingContrat', () => {
         // TODO : Retrieve the nft id in returned infos
         const nftId = await nftCollection.getNftId();
         const nft = blockchain.openContract(Nft.fromAddress(await nftCollection.getGetNftAddress(nftId)));
-        console.log("Nft summary : ", await nft.getSummary());
 
 
 
 
-        /////// Test stake
+        //////////////////// Test staking ////////////////////////////////
+        console.log("Nft summary before : ", await nft.getSummary());
+        //let resultatt = await rentingContrat.send(
+        //    test_customer_wallet.getSender(),
+        //    {
+        //        value: toNano("1"),
+        //    },
+        //    "TEST"
+        //);
+        //console.log("Nft summary after : ", await nft.getSummary());
+        //return;
 
         let stake = toNano("1");
         let duration = BigInt(2);
         let pricePerHour = toNano("10");
-        
-        customersContract.send(
+
+        await productNft.send(
+            test_owner_wallet.getSender(),
+            {
+                value: stake,
+            },
+            {
+                $$type: "ChangeOwner",
+                newOwner: customersContract.address,
+                nftId: BigInt(1),
+                originalSender: null
+            }
+        );
+
+        // Customer Send stake
+        let resultat = await customersContract.send(
             test_customer_wallet.getSender(),
             {
                 value: stake,
@@ -158,7 +183,15 @@ describe('RentingContrat', () => {
             null
         );
 
+        //printTransactionFees(resultat.transactions);
 
+
+        await sleep(4);
+
+        console.log("Nft summary should have changed : ", await nft.getSummary());
+
+
+        // Owner send owner request
         rentingContrat.send(
             test_owner_wallet.getSender(),
             {
@@ -172,6 +205,7 @@ describe('RentingContrat', () => {
             }
         )        
 
+        // Customer send renting fees
         customersContract.send(
             test_customer_wallet.getSender(),
             {
@@ -179,5 +213,9 @@ describe('RentingContrat', () => {
             },
             null
         );
+
+        await sleep(1);
+
+        console.log("Nft summary should have changed again : ", await nft.getSummary());
     });
 });

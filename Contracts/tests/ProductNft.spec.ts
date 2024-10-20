@@ -83,4 +83,5 @@ describe('ProductNft', () => {
             console.log("Test get : ", await nft.getSummary());
         }
     });
+
 });
