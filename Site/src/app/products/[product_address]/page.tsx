@@ -1,45 +1,64 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { StarIcon, MessageCircle, ChevronLeft, ChevronRight, X } from "lucide-react"
-import { useProduct } from "@/hooks/useProduct"
-import ProductPageSkeleton from "./loading"
+import { useState } from "react";
+import Image from "next/image";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  StarIcon,
+  MessageCircle,
+  ChevronLeft,
+  ChevronRight,
+  X,
+} from "lucide-react";
+import { useProduct } from "@/hooks/useProduct";
+import ProductPageSkeleton from "./loading";
+import Link from "next/link";
 
-export default function ProductPage({ params }: { params: { product_id: string } }) {
-  const { product } = useProduct(params.product_id);
+export default function ProductPage({
+  params,
+}: {
+  params: { product_address: string };
+}) {
+  const { product } = useProduct(params.product_address);
   const [mainImage, setMainImage] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImage, setModalImage] = useState(0);
-  
+
   if (!product) {
-    return <ProductPageSkeleton />
+    return <ProductPageSkeleton />;
   }
 
   const openModal = (index: number) => {
     setModalImage(index);
     setIsModalOpen(true);
   };
-  
+
   const nextImage = () => {
     setModalImage((prev) => (prev + 1) % product.images.length);
   };
 
   const prevImage = () => {
-    setModalImage((prev) => (prev - 1 + product.images.length) % product.images.length);
+    setModalImage(
+      (prev) => (prev - 1 + product.images.length) % product.images.length
+    );
   };
 
   return (
     <div className="container mx-auto">
       <div className="grid md:grid-cols-2 gap-6">
         <div>
-          <div 
+          <div
             className="relative aspect-video mb-4 cursor-pointer"
             onClick={() => openModal(mainImage)}
           >
@@ -52,8 +71,8 @@ export default function ProductPage({ params }: { params: { product_id: string }
           </div>
           <div className="grid grid-cols-4 gap-2">
             {product.images.map((img: string, index: number) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className="relative aspect-square cursor-pointer"
                 onClick={() => {
                   setMainImage(index);
@@ -63,7 +82,9 @@ export default function ProductPage({ params }: { params: { product_id: string }
                   src={img}
                   alt={`${product.name} - view ${index + 1}`}
                   fill
-                  className={`rounded-md object-cover ${index === mainImage ? 'ring-2 ring-primary' : ''}`}
+                  className={`rounded-md object-cover ${
+                    index === mainImage ? "ring-2 ring-primary" : ""
+                  }`}
                 />
               </div>
             ))}
@@ -75,9 +96,7 @@ export default function ProductPage({ params }: { params: { product_id: string }
             <Badge variant="secondary" className="mr-2">
               {product.pricePerHour}/hour
             </Badge>
-            <Badge variant="outline">
-              {product.cautionPrice} caution
-            </Badge>
+            <Badge variant="outline">{product.cautionPrice} caution</Badge>
           </div>
           <p className="text-muted-foreground mb-4">{product.description}</p>
           <Card>
@@ -86,8 +105,13 @@ export default function ProductPage({ params }: { params: { product_id: string }
             </CardHeader>
             <CardContent className="flex items-center">
               <Avatar className="h-12 w-12 mr-4">
-                <AvatarImage src={product.owner.avatar || undefined } alt={product.owner.username} />
-                <AvatarFallback>{product.owner.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                <AvatarImage
+                  src={product.owner.avatar || undefined}
+                  alt={product.owner.username}
+                />
+                <AvatarFallback>
+                  {product.owner.username.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
               </Avatar>
               <div>
                 <h3 className="font-semibold">{product.owner.username}</h3>
@@ -96,21 +120,42 @@ export default function ProductPage({ params }: { params: { product_id: string }
                     <StarIcon
                       key={i}
                       className={`h-4 w-4 ${
-                        product.owner.rating && i < Math.floor(product.owner.rating) ? "text-yellow-400" : "text-gray-300"
+                        product.owner.rating &&
+                        i < Math.floor(product.owner.rating)
+                          ? "text-yellow-400"
+                          : "text-gray-300"
                       }`}
-                      fill={product.owner.rating && i < Math.floor(product.owner.rating) ? "currentColor" : "none"}
+                      fill={
+                        product.owner.rating &&
+                        i < Math.floor(product.owner.rating)
+                          ? "currentColor"
+                          : "none"
+                      }
                     />
                   ))}
-                  <span className="ml-2 text-sm text-muted-foreground">{product.owner.rating ? product.owner.rating.toFixed(1) : "No Ratings"}</span>
+                  <span className="ml-2 text-sm text-muted-foreground">
+                    {product.owner.rating
+                      ? product.owner.rating.toFixed(1)
+                      : "No Ratings"}
+                  </span>
                 </div>
               </div>
             </CardContent>
             {product.owner.telegramHandle && (
               <CardFooter>
-                <Button variant="outline" className="w-full">
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  Contact via Telegram
-                </Button>
+                <Link
+                  href={`https://t.me/${
+                    product.owner.telegramHandle.charAt(0) == "@"
+                      ? product.owner.telegramHandle.substring(1)
+                      : product.owner.telegramHandle
+                  }?text=Hello! I am intrested by your product up for rent! Ref : ${product.name}`}
+                  target="_blank"
+                >
+                  <Button variant="outline" className="w-full">
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    Contact via Telegram
+                  </Button>
+                </Link>
               </CardFooter>
             )}
           </Card>
@@ -118,9 +163,7 @@ export default function ProductPage({ params }: { params: { product_id: string }
       </div>
       <Separator className="my-8" />
       <div className="mt-8 text-center">
-        <Button size="lg">
-          Rent This Product
-        </Button>
+        <Button size="lg">Rent This Product</Button>
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -152,5 +195,5 @@ export default function ProductPage({ params }: { params: { product_id: string }
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

@@ -45,6 +45,7 @@ type NftSummary = {
   productDescription: string;
   productValue: bigint;
   descriptionImageUrl: string;
+	productLocation: string;
 };
 
 // The main Nft class
@@ -246,9 +247,10 @@ export class Nft {
     const result = await this.client.runMethod(this.address, "summary");
 		
     const stack = result.stack;
-    const summary = this.parseNftSummary(stack);
-		console.log(summary);
-    return summary;
+
+		const summary = this.parseNftSummary(stack);
+
+		return summary;
   }
 
   // Helper function to parse NftSummary from the stack
@@ -265,6 +267,8 @@ export class Nft {
 
     const descriptionImageUrl = reader.readString();
 
+    const productLocation = reader.readString();
+
     return {
       $$type: "NftSummary",
       owner,
@@ -272,6 +276,7 @@ export class Nft {
       productDescription,
       productValue,
       descriptionImageUrl,
+			productLocation
     };
   }
 

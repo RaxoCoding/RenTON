@@ -7,6 +7,11 @@ const nextConfig = {
           hostname: 'mnlfkqhkiahkfkyumdgl.supabase.co',
           pathname: '**',
         },
+        {
+          protocol: 'https',
+          hostname: 'iheartcraftythings.com',
+          pathname: '**',
+        },
       ],
     },
   };

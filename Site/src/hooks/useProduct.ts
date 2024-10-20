@@ -1,10 +1,12 @@
-"use client"
+"use client";
 
 import { useQuery } from "@tanstack/react-query";
 import { getProductById } from "@/supabase/productsQuery";
-import { FullProduct } from "@/types/product";
-
-
+import { FullProduct, Product } from "@/types/product";
+import { Address, fromNano } from "ton-core";
+import { Nft } from "@/contracts/Nft";
+import { User } from "@/types/user";
+import { supabase } from "@/lib/supabaseClient";
 
 // const productMock = {
 // 	id: '123',
@@ -24,18 +26,56 @@ import { FullProduct } from "@/types/product";
 // 		"A high-performance mountain bike perfect for rough terrains and adventurous trails. Features 21-speed gears, front suspension, and durable tires.",
 // };
 
-export function useProduct(productId: string) {
-  // const fetchProduct = async (): Promise<FullProduct | null> => {
-  //   return productMock;
-  // };
+export function useProduct(productAddress: string) {
+  const fetchUser = async (walletAddress: string): Promise<User | null> => {
+    const { data, error } = await supabase
+      .from("users")
+      .select("id, username, walletAddress, avatar, rating, telegramHandle")
+      .eq("walletAddress", walletAddress)
+      .single();
+
+    if (error) throw error;
+
+    return data;
+  };
+
+  const fetchProduct = async (): Promise<FullProduct | null> => {
+    const nftContract = new Nft(productAddress);
+
+    const summary = await nftContract.getSummary();
+
+    const ownerAddress = Address.parse(summary.owner.toString()).toRawString();
+
+    const owner = await fetchUser(ownerAddress);
+
+    const product: FullProduct = {
+      id: productAddress,
+      name: summary.productName.toString(),
+      images: [summary.descriptionImageUrl.toString()],
+      description: summary.productDescription.toString(),
+      location: summary.productLocation.toString(),
+      pricePerHour: parseInt(fromNano(summary.productValue.toString())),
+      cautionPrice: parseInt(fromNano(summary.productValue.toString())),
+      owner: {
+        id: owner?.id || "0",
+        username: owner?.username || "Not Found",
+        walletAddress: ownerAddress,
+        avatar: owner?.avatar || null,
+        rating: owner?.rating || null,
+        telegramHandle: owner?.telegramHandle || "@notfound"
+      },
+    };
+
+    return product;
+  };
 
   const {
     data: product,
     error,
     isLoading,
   } = useQuery<FullProduct | null, Error>({
-    queryKey: ["product", productId],
-  queryFn: () => getProductById(productId),
+    queryKey: ["product", productAddress],
+    queryFn: fetchProduct,
   });
 
   return {
@@ -44,4 +84,3 @@ export function useProduct(productId: string) {
     isLoading: isLoading,
   };
 }
-
