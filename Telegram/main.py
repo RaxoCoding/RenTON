@@ -51,6 +51,17 @@ def check_uuidd(uuid):
 	if record != None:	return record[0]
 	return None
 
+def list_user_rental(id):
+	conn = sqlite3.connect(DB_PATH)
+	cursor = conn.cursor()
+	cursor.execute('''
+	    SELECT uuid FROM renters WHERE renter_id = ?
+	''', (id,))
+	rentals = cursor.fetchall()
+	conn.close()
+	return rentals
+	
+
 session_manager = {}
 session_tradeoffer = {}
 my_secret = 'my_super_secret'
