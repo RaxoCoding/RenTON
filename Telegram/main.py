@@ -7,10 +7,9 @@
 # 3ee6d905-4344-4117-a992-1d75a3d99b56
 
 from aiogram import Bot, Dispatcher, types, executor
-from aiogram.types import ReplyKeyboardMarkup , KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import ReplyKeyboardMarkup , KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 import re, jwt, uuid
 import sqlite3
-import callback_data
 ###########################################################################################"
 
 DB_PATH = 'user.db'
@@ -49,7 +48,8 @@ def check_uuidd(uuid):
 	''', (uuid,))
 	record = cursor.fetchone()
 	conn.close()
-	return record[0]
+	if record != None:	return record[0]
+	return None
 
 session_manager = {}
 session_tradeoffer = {}
@@ -81,7 +81,7 @@ bot = Bot(token=key)
 
 dp = Dispatcher(bot) 
 
-menu = InlineKeyboardMarkup(row_width=1, inline_keyboard=[[
+menu = InlineKeyboardMarkup(row_width=2, inline_keyboard=[[
 	InlineKeyboardButton(text="Hire", callback_data="Hire_bike"),
 	InlineKeyboardButton(text="Managing your rental", callback_data="Manag_rent"),
 	InlineKeyboardButton(text="Report a problem", callback_data="Report")
@@ -93,6 +93,9 @@ do_offer = InlineKeyboardMarkup(row_width=1, inline_keyboard=[[
 	]])
 
 
+@dp.callback_query_handler(text = "Manage_rent")
+async def manag_rent(text = "Manage_rent"):
+	return
 
 
 @dp.callback_query_handler(text = "Hire_bike")
@@ -122,7 +125,6 @@ A customer wishes to hire your bike under this ad {infos["uuid"]}. Do you accept
 		"uuid":str(uuid_offer)
 	}
 	session_tradeoffer[str(uuid_offer)] = jwt.encode(payload=payload, key=my_secret)
-	print(session_tradeoffer)
 	accept_deny = InlineKeyboardMarkup(row_width=1, inline_keyboard=[[
 		InlineKeyboardButton(text="Accept", callback_data=f"{uuid_offer}-oui"),
 		InlineKeyboardButton(text="Deny", callback_data=f"{uuid_offer}-non")
@@ -139,9 +141,12 @@ async def accept_deny(call: types.CallbackQuery):
 	if call_uuid+"-oui" == call.data:
 		message = "Oui"
 		await bot.send_message(text = message, chat_id=data["client_id"])
+		await call.message.delete()
 	elif call_uuid+"-non" == call.data:
 		message = "Non"
 		await bot.send_message(text = message, chat_id=data["client_id"])
+		await call.message.delete()
+
 	
 @dp.message_handler(commands=['start', 'help']) 
 async def welcome(message: types.Message): 
@@ -154,7 +159,7 @@ async def check_rp(message: types.Message):
 
 		infos = jwt.decode(session_manager[message.from_id], key=my_secret, algorithms=['HS256'])
 		message_to_renter = f"""
-Hey,
+Hey, 
 A customer wishes to hire your bike under this ad {infos[uuid]}. Do you accept?
 """
 		await bot.send_message(chat_id=infos['renter_id'], text=message_to_renter, reply_markup=accept_deny)
@@ -164,7 +169,7 @@ A customer wishes to hire your bike under this ad {infos[uuid]}. Do you accept?
 	if re.match(regex_uuid, message.text):
 		uuid_rent = check_uuidd(message.text)
 
-		if check_uuidd(message.text) == None:
+		if uuid_rent == None:
 			await message.reply("No UUID matches what you have entered. Back to menu", reply_markup=menu)
 		else:
 			payload_data = {
