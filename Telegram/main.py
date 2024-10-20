@@ -92,10 +92,19 @@ do_offer = InlineKeyboardMarkup(row_width=1, inline_keyboard=[[
 	InlineKeyboardButton(text="Cancel", callback_data="Cancel"),
 	]])
 
+@dp.callback_query_handler(text = "Manag_rent")
+async def manage_rent(call: types.CallbackQuery):
 
-@dp.callback_query_handler(text = "Manage_rent")
-async def manag_rent(text = "Manage_rent"):
-	return
+	
+	user_id = call.from_user["id"]
+	user_rentals  = [row[0] for row in list_user_rental(user_id)]
+	
+	rentals = InlineKeyboardMarkup(row_width=3)
+	for val in user_rentals:
+		rentals.add(InlineKeyboardButton(text=val, callback_data=val+"-mgmt"))
+
+	
+	await call.message.answer("Select the rent you want to manage", reply_markup=rentals)
 
 
 @dp.callback_query_handler(text = "Hire_bike")
@@ -106,7 +115,11 @@ Visible on the website page.
 """		
 	await call.message.answer(text=returned_msg)
 
+@dp.callback_query_handler(text = "Cancel")
+async def offer(call: types.CallbackQuery):
 
+	user_id = call.from_user["id"]
+	await bot.send_message(text=wlc_msg, chat_id=user_id, reply_markup=menu)
 
 @dp.callback_query_handler(text = "Offer")
 async def offer(call: types.CallbackQuery):
