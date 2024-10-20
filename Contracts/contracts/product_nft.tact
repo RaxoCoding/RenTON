@@ -29,7 +29,7 @@ contract ProductNft with Deployable {
             mode: SendRemainingValue,
             value: ton("0"),
             code: init.code,
-            data    : init.data
+            data: init.data
         });
         dump("Minting done");
     }
@@ -61,6 +61,14 @@ contract ProductNft with Deployable {
     get fun nftId(): Int {
         return self.curNftId;
     }
+
+    get fun nftExists(_nftId: Int): Bool {
+        return self.curNftId < _nftId && _nftId > 0;
+    }
+
+    receive(msg: CheckNftExists) {
+        //require(self.nftExists(msg.nftId), "Token does not exists");
+    }
 }
 
 contract Nft with Deployable {
@@ -68,12 +76,10 @@ contract Nft with Deployable {
     initDone: Bool = false;
     summary: NftSummary?;
     owner: Address?;
-    customer: Address?;
-    productStake: Int?;
     productName: String?;
     productDescription: String?;
     descriptionImageUrl: String?;
-    productStakeFilled: Bool = false;
+    productValue: Int?;
 
     init(_parent_contract: Address, _value: Int) {
         dump("NFT creation");
@@ -86,12 +92,10 @@ contract Nft with Deployable {
         require(self.parent_contract == ctx.sender, "Only parent can init NFT");
         require(self.initDone == false, "Init already done");
         self.owner =  msg.owner;
-        self.customer =  msg.customer;
-        self.productStake =  msg.productStake;
         self.productName =  msg.productName;
         self.productDescription =  msg.productDescription;
         self.descriptionImageUrl =  msg.descriptionImageUrl;
-        self.productStakeFilled = false;
+        self.productValue = msg.productValue;
         self.initDone = true;
     }
 
@@ -99,39 +103,30 @@ contract Nft with Deployable {
         require(self.initDone == true, "Not initialized");
         return NftSummary{
             owner: self.owner!!,
-            customer: self.customer!!,
-            productStake: self.productStake!!,
-            productStakeFilled: self.productStakeFilled,
+            productValue: self.productValue!!,
             productName: self.productName!!,
             productDescription: self.productDescription!!,
             descriptionImageUrl: self.descriptionImageUrl!!
         };
     }
 
-    receive(msg: ReceiveFees) {
-        let ctx = context();
-        require(self.initDone == true, "Initialisation not done");
-        require(ctx.sender == self.parent_contract, "Only parent can send fees");
-        require(ctx.value == self.productStake, "Given stake value must be equal to product stake");
-        self.customer = msg.customer;
-        self.productStakeFilled = true;
-        dump("Received fees");
+    receive(msg: UpdateProductProperties) {
+        if(msg.productValue != null) {
+            self.productValue = msg.productValue
+        }
+        if(msg.productName != null) {
+            self.productName = msg.productName;
+        }
+        if(msg.productDescription != null) {
+            self.productDescription = msg.productDescription;
+        }
+        if(msg.descriptionImageUrl != null) {
+            self.descriptionImageUrl = msg.descriptionImageUrl;
+        }
     }
 
-    receive("DeliverFees") {
-        let ctx = context();
-        require(ctx.sender == self.parent_contract, "Only parent can send deliver fees");
-        dump("Delivering NFT value");
-        send(SendParameters{
-            to: self.parent_contract,
-            value: ton("0"),
-            mode: SendRemainingBalance | SendRemainingValue,
-            body: self.summary().toCell()
-        });
-        self.customer = null;
-
+    receive(msg: ChangeOwner) {
+        require(context().sender == self.parent_contract, "Only parent can end the rent");
+        self.owner = msg.newOwner;
     }
-
-
-    
 }

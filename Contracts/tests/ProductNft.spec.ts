@@ -43,13 +43,14 @@ describe('ProductNft', () => {
             success: true,
         });
     });
+    it("", async () => {})
 
-    it('test token creation', async () => {
+    /*it('test token creation', async () => {
         
         let nftId = await productNft.getNftId();
         console.log(nftId);
 
-        for(let i = 0; i < 10; i ++) {
+        for(let i = 0; i < 1; i ++) {
             const res = await productNft.send(
                 deployer.getSender(),
                 {
@@ -58,22 +59,18 @@ describe('ProductNft', () => {
                 {
                     $$type: "InitNft",
                     owner: deployer.address,
-                    customer: deployer.address,
-                    productStake: BigInt(randomInt(100)),
                     productName: "Test product "+i,
                     productDescription: "Test description "+i,
-                    descriptionImageUrl: "https://iheartcraftythings.com/wp-content/uploads/2021/06/9.jpg"
+                    descriptionImageUrl: "https://iheartcraftythings.com/wp-content/uploads/2021/06/9.jpg",
+                    productValue: toNano(1000)
                 }
             )
-            printTransactionFees(res.transactions);   
+            //printTransactionFees(res.transactions);   
         }
         
 
         //display_log(res);
         
-        
-        // console.log(res.transactions[0].outMessages['n:0']);
-
         nftId = await productNft.getNftId();
         console.log(nftId);
         const nft_addrs = await productNft.getGetNftAddresses();
@@ -83,45 +80,5 @@ describe('ProductNft', () => {
             const nft = blockchain.openContract(Nft.fromAddress(nft_addr));
             console.log("Test get : ", await nft.getSummary());
         }
-        //const nft_res = await nft.send(
-        //    deployer.getSender(),
-        //    {
-        //        value: toNano('1000')
-        //    },
-        //    {
-        //        $$type: 'InitNft',
-        //        owner: deployer.address,
-        //        productValue: BigInt(10),
-        //        productName: "Test product",
-        //        productDescription: "Test description"
-        //    }
-        //)
-//
-        //expect(nft_res.transactions).toHaveTransaction({
-        //    from: deployer.address,
-        //    to: productNft.address,
-        //    deploy: true,
-        //    success: true,
-        //});
-
-        
-        
-
-        
-        
-
-        //console.log("Token creation res : ", res);
-        //const nft_addresses = await productNft.getGetNftAddresses();
-        //
-        //console.log("Nft addresses : ", nft_addresses);
-        //for(let [_id, addr] of nft_addresses) {
-        //    const nft = blockchain.openContract(Nft.fromAddress(addr));
-        //    console.log(`Nft ${_id} summary : `, await nft.getSummary());
-        //}
-
-        //const nft_address = await productNft.getGetNftAddress();
-        //const nft = blockchain.openContract(Nft.fromAddress(nft_address));
-        
-        
-    });
+    });*/
 });

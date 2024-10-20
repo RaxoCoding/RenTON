@@ -1,5 +1,6 @@
 import "@stdlib/deploy";
 import "./messages.tact";
+import "./product_nft.tact";
 
 contract RentingContract with Deployable {
     agreements: map<Address, Address>;
@@ -151,10 +152,28 @@ contract CustomersArray {
     customer_id: map<Address, Int>;
     parent: Address;
     has_paid: map<Address, Bool>;
+    nftCollection: Address;
 
     init(parent: Address) {
         self.customers_list = emptyArray();
         self.parent = parent;
+
+        // Deploy the NFT collection
+        let initNft: StateInit = initOf ProductNft(myAddress());
+        send(SendParameters{
+                to: contractAddress(initNft),
+                body: Deploy{
+                    queryId: 0
+                }.toCell(),
+                value: ton("0"),
+                mode: SendRemainingValue,
+                code: initNft.code,
+                data: initNft.data
+            }
+        );
+        self.nftCollection = contractAddress(initNft);
+
+
     }
 
     // Add a new customer
@@ -162,12 +181,23 @@ contract CustomersArray {
     receive(toAppend: AddCustomer) {
         require(sender() == self.parent, "Not authorized");
         require(self.customer_id.get(toAppend.agreement_infos.customer) == null, "This customer is already using something for this owner");
+        //// Check that token exists, receiver will raise an error if not
+        //let ret = send(SendParameters{
+        //    to: self.nftCollection,
+        //    value: ton("0"),
+        //    mode: SendIgnoreErrors,
+        //    body: CheckNftExists{
+        //        nftId: toAppend.agreement_infos.token
+        //    }.toCell()
+        //});
+        //dump("CHECK EXISTS RET : ");
+        //dump(ret);
         self.customer_id.set(toAppend.agreement_infos.customer, self.customers_list.last_idx_free);
         self.customers_list.append(toAppend.agreement_infos);
     }
 
     // Receive the staking
-    receive(){
+    receive("stack"){
         let customer_addr = sender();
         let customer_idx = self.customer_id.get(customer_addr);
         require(customer_idx != null, "Customer doesn't exist for this owner");
@@ -176,6 +206,8 @@ contract CustomersArray {
         // Check if the agreement time for the stake is respected and if the owner hasn't lied
         let agreement: AgreementInfos = _agreement!!;
         require(agreement.stake <= context().value, "Not enough money for staking");
+
+        agreement.has_staked = true;
 
 
         
@@ -249,5 +281,9 @@ contract CustomersArray {
     get fun customers_agreement() : map<Int as uint16, AgreementInfos> {
         dump(self.customers_list.last_idx_free);
         return self.customers_list.customers;
+    }
+
+    get fun nftCollectionAddress(): Address {
+        return self.nftCollection;
     }
 }

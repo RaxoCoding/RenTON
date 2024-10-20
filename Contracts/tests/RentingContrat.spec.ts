@@ -3,6 +3,7 @@ import { toNano } from '@ton/core';
 import { RentingContract } from '../wrappers/RentingContrat';
 import '@ton/test-utils';
 import { CustomersArray } from '../build/RentingContrat/tact_CustomersArray';
+import { ProductNft, Nft } from '../wrappers/ProductNft';
 
 describe('RentingContrat', () => {
     let blockchain: Blockchain;
@@ -83,6 +84,7 @@ describe('RentingContrat', () => {
             }
         );
 
+
         printTransactionFees(result.transactions);
 
         const customersAddr = await rentingContrat.getCustomersContractAddr(test_owner_wallet.getSender().address);
@@ -91,6 +93,11 @@ describe('RentingContrat', () => {
 
         let res = await customersContract.getCustomersAgreement();
 
-        console.log(res);
+        console.log("Customers contracts : ", res["_map"]);
+
+        // Test NFT collection exists
+        let nftCollectionAddress = await customersContract.getNftCollectionAddress();
+        let nftCollection = blockchain.openContract(await ProductNft.fromAddress(nftCollectionAddress));
+        console.log("NFT current Id : ", await nftCollection.getNftId());
     });
 });

@@ -2,7 +2,7 @@
 struct AgreementInfos {
     owner: Address;
     customer: Address;
-    token: Address;
+    token: Int;
     timestart: Int as uint128;          // in seconds starting from 1st january 1970 at 0h00 UTC+0   (using Now() function)
     agreement_duration: Int as uint128; // timestart + agreement_duration = time to give stake to Owner
     price_per_hour: Int as uint128;     // TODO: Use appropriate token unit
@@ -13,7 +13,7 @@ struct AgreementInfos {
 message Agreement {
     owner: Address;
     customer: Address;
-    token: Address;
+    token: Int;
     agreement_duration: Int as uint128;
     price_per_hour: Int as uint128;
     stake: Int as uint128;
@@ -49,23 +49,35 @@ message AgreementEndValidation {
 
 struct NftSummary {
     owner: Address;
-    customer: Address;
-    productStake: Int as coins;
-    productStakeFilled: Bool;
     productName: String;
     productDescription: String;
+    productValue: Int;
     descriptionImageUrl: String;
 }
 
 message InitNft {
     owner: Address;
-    customer: Address;
-    productStake: Int as coins;
     productName: String;
     productDescription: String;
     descriptionImageUrl: String;
+    productValue: Int;
 }
 
 message ReceiveFees {
     customer: Address
+}
+
+message ChangeOwner {
+    newOwner: Address
+}
+
+message CheckNftExists {
+    nftId: Int
+}
+
+message UpdateProductProperties {
+    productName: String?;
+    productDescription: String?;
+    descriptionImageUrl: String?;
+    productValue: Int?;
 }
