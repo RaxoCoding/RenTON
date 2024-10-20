@@ -21,7 +21,7 @@ interface baseSideEffects {
 }
 
 const productNftContract = new ProductNft(
-  "EQDLbOP7Jxg4CV3GaMPglrHUn1fsecD7trwTSOZwTPf2o9Ug"
+  "EQDbqRuKhJzVePg-iEuIaz027J9esBL5v4mGT5gCV2MxO_VV"
 );
 
 export function useInventory() {
@@ -51,8 +51,8 @@ export function useInventory() {
         images: [summary.descriptionImageUrl.toString()],
         description: summary.productDescription.toString(),
         location: summary.productLocation.toString(),
-        pricePerHour: parseInt(fromNano(summary.productValue.toString())),
-        cautionPrice: parseInt(fromNano(summary.productValue.toString())),
+        pricePerHour: parseInt(fromNano(summary.productHourPrice.toString())),
+        cautionPrice: parseInt(fromNano(summary.productStake.toString())),
         owner: Address.parse(summary.owner.toString()).toString(),
       };
 
@@ -84,7 +84,8 @@ export function useInventory() {
         product.description || "",
         "https://mnlfkqhkiahkfkyumdgl.supabase.co/storage/v1/object/public/images/Mountainbike-fully-MTB-27-5-Zoll-Velo-Rocker-X--3--3900553759.jpg",
         toNano(product.cautionPrice),
-        product.location || "Unknown"
+        product.location || "Unknown",
+        toNano(product.pricePerHour)
       ));
     },
     onSuccess: (_, { onSuccess }: addToInventoryVariables) => {

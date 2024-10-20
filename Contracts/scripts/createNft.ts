@@ -3,7 +3,7 @@ import { ProductNft } from '../wrappers/ProductNft';
 import { NetworkProvider, sleep } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider, args: string[]) {
-    const test_pub_address = Address.parse("0QBADHKEmV-7Bexo5XOcSD0hPDVpd5h1_kA15DMjpzLU92Wl");
+    const test_pub_address = Address.parse("0QDOxz6yJVJ3LbHkUErqVkrky8mGmeBY3DB5ORTmtmTFbn5-");
     const ui = provider.ui();
 
     const address = Address.parse(args.length > 0 ? args[0] : await ui.input('ProductNft address'));
@@ -25,7 +25,8 @@ export async function run(provider: NetworkProvider, args: string[]) {
         {
             $$type: 'InitNft',
             owner: test_pub_address,
-            productValue: toNano(10),
+            productStake: toNano("10"),
+            productHourPrice: toNano(10),
             productDescription: "Test description",
             productName: "Test product",
             productLocation: "Berlin",

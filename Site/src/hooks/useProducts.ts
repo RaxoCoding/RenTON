@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Address, fromNano } from "ton-core";
 
 const productNftContract = new ProductNft(
-  "EQDLbOP7Jxg4CV3GaMPglrHUn1fsecD7trwTSOZwTPf2o9Ug"
+  "EQDbqRuKhJzVePg-iEuIaz027J9esBL5v4mGT5gCV2MxO_VV"
 );
 
 export function useProducts() {
@@ -32,8 +32,8 @@ export function useProducts() {
         images: [summary.descriptionImageUrl.toString()],
         description: summary.productDescription.toString(),
         location: summary.productLocation.toString(),
-        pricePerHour: parseInt(fromNano(summary.productValue.toString())),
-        cautionPrice: parseInt(fromNano(summary.productValue.toString())),
+        pricePerHour: parseInt(fromNano(summary.productHourPrice.toString())),
+        cautionPrice: parseInt(fromNano(summary.productStake.toString())),
         owner: Address.parse(summary.owner.toString()).toString(),
       }
 

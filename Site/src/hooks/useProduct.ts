@@ -54,8 +54,8 @@ export function useProduct(productAddress: string) {
       images: [summary.descriptionImageUrl.toString()],
       description: summary.productDescription.toString(),
       location: summary.productLocation.toString(),
-      pricePerHour: parseInt(fromNano(summary.productValue.toString())),
-      cautionPrice: parseInt(fromNano(summary.productValue.toString())),
+      pricePerHour: parseInt(fromNano(summary.productHourPrice.toString())),
+      cautionPrice: parseInt(fromNano(summary.productStake.toString())),
       owner: {
         id: owner?.id || "0",
         username: owner?.username || "Not Found",

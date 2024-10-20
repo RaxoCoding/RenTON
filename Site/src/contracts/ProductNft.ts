@@ -19,8 +19,9 @@ type InitNft = {
   productName: string;
   productDescription: string;
   descriptionImageUrl: string;
-  productValue: bigint;
+  productStake: bigint;
   productLocation: string;
+  productHourPrice: bigint;
 };
 
 type Deploy = {
@@ -49,7 +50,7 @@ export class ProductNft {
   // Helper function to serialize InitNft messages
   private storeInitNft(message: InitNft): Cell {
     const builder = new Builder();
-    builder.storeUint(3476875793, 32); // Updated op code for InitNft
+    builder.storeUint(3935032285, 32); // Updated op code for InitNft
     builder.storeAddress(message.owner);
     builder.storeStringRefTail(message.productName);
     builder.storeStringRefTail(message.productDescription);
@@ -57,8 +58,9 @@ export class ProductNft {
     // Create a new builder for the reference cell
     const refBuilder = new Builder();
     refBuilder.storeStringRefTail(message.descriptionImageUrl);
-    refBuilder.storeInt(message.productValue, 257);
+    refBuilder.storeInt(message.productStake, 257);
     refBuilder.storeStringRefTail(message.productLocation);
+    refBuilder.storeInt(message.productHourPrice, 257);
 
     builder.storeRef(refBuilder.endCell());
     return builder.endCell();
@@ -104,8 +106,9 @@ export class ProductNft {
     productName: string,
     productDescription: string,
     descriptionImageUrl: string,
-    productValue: bigint,
+    productStake: bigint,
     productLocation: string,
+    productHourPrice: bigint,
     amount: bigint = toNano("0.05") // Default amount to send
   ) {
     // Create the InitNft message
@@ -115,8 +118,9 @@ export class ProductNft {
       productName,
       productDescription,
       descriptionImageUrl,
-      productValue,
+      productStake,
       productLocation,
+      productHourPrice,
     };
 
     // Send the message to the contract

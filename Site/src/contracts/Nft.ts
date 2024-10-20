@@ -5,9 +5,9 @@ import {
   Sender,
   toNano,
   TupleBuilder,
-	TonClient,
-	TupleReader
-} from "ton"; // Ensure you have the 'ton-core' package installed
+  TonClient,
+  TupleReader,
+} from "ton"; // Ensure you have the 'ton' package installed
 import { tonClient } from "./connection";
 
 // Define the types used in the contract
@@ -17,15 +17,19 @@ type InitNft = {
   productName: string;
   productDescription: string;
   descriptionImageUrl: string;
-  productValue: bigint;
+  productStake: bigint;
+  productLocation: string;
+  productHourPrice: bigint;
 };
 
 type UpdateProductProperties = {
   $$type: "UpdateProductProperties";
-  productName: string | null;
-  productDescription: string | null;
-  descriptionImageUrl: string | null;
-  productValue: bigint | null;
+  productName?: string | null;
+  productDescription?: string | null;
+  descriptionImageUrl?: string | null;
+  productStake?: bigint | null;
+  productLocation?: string | null;
+  productHourPrice?: bigint | null;
 };
 
 type ChangeOwner = {
@@ -41,11 +45,12 @@ type Deploy = {
 type NftSummary = {
   $$type: "NftSummary";
   owner: Address;
+  productStake: bigint;
   productName: string;
   productDescription: string;
-  productValue: bigint;
   descriptionImageUrl: string;
-	productLocation: string;
+  productHourPrice: bigint;
+  productLocation: string;
 };
 
 // The main Nft class
@@ -69,12 +74,19 @@ export class Nft {
   // Helper function to serialize InitNft messages
   private storeInitNft(message: InitNft): Cell {
     const builder = new Builder();
-    builder.storeUint(3939375188, 32); // op code for InitNft
+    builder.storeUint(3476875793, 32); // Updated op code for InitNft
     builder.storeAddress(message.owner);
     builder.storeStringRefTail(message.productName);
     builder.storeStringRefTail(message.productDescription);
-    builder.storeStringRefTail(message.descriptionImageUrl);
-    builder.storeInt(message.productValue, 257);
+
+    // Create a reference cell for additional data
+    const refBuilder = new Builder();
+    refBuilder.storeStringRefTail(message.descriptionImageUrl);
+    refBuilder.storeInt(message.productStake, 257);
+    refBuilder.storeStringRefTail(message.productLocation);
+    refBuilder.storeInt(message.productHourPrice, 257);
+
+    builder.storeRef(refBuilder.endCell());
     return builder.endCell();
   }
 
@@ -83,8 +95,9 @@ export class Nft {
     message: UpdateProductProperties
   ): Cell {
     const builder = new Builder();
-    builder.storeUint(4200171903, 32); // op code for UpdateProductProperties
+    builder.storeUint(2393722411, 32); // Updated op code for UpdateProductProperties
 
+    // Serialize optional fields
     if (message.productName !== null && message.productName !== undefined) {
       builder.storeBit(true).storeStringRefTail(message.productName);
     } else {
@@ -100,31 +113,53 @@ export class Nft {
       builder.storeBit(false);
     }
 
+    // Create a reference cell for additional optional fields
+    const refBuilder = new Builder();
+
     if (
       message.descriptionImageUrl !== null &&
       message.descriptionImageUrl !== undefined
     ) {
-      builder.storeBit(true).storeStringRefTail(message.descriptionImageUrl);
+      refBuilder.storeBit(true).storeStringRefTail(message.descriptionImageUrl);
     } else {
-      builder.storeBit(false);
+      refBuilder.storeBit(false);
     }
 
     if (
-      message.productValue !== null &&
-      message.productValue !== undefined
+      message.productStake !== null &&
+      message.productStake !== undefined
     ) {
-      builder.storeBit(true).storeInt(message.productValue, 257);
+      refBuilder.storeBit(true).storeInt(message.productStake, 257);
     } else {
-      builder.storeBit(false);
+      refBuilder.storeBit(false);
     }
 
+    if (
+      message.productLocation !== null &&
+      message.productLocation !== undefined
+    ) {
+      refBuilder.storeBit(true).storeStringRefTail(message.productLocation);
+    } else {
+      refBuilder.storeBit(false);
+    }
+
+    if (
+      message.productHourPrice !== null &&
+      message.productHourPrice !== undefined
+    ) {
+      refBuilder.storeBit(true).storeInt(message.productHourPrice, 257);
+    } else {
+      refBuilder.storeBit(false);
+    }
+
+    builder.storeRef(refBuilder.endCell());
     return builder.endCell();
   }
 
   // Helper function to serialize ChangeOwner messages
   private storeChangeOwner(message: ChangeOwner): Cell {
     const builder = new Builder();
-    builder.storeUint(256331011, 32); // op code for ChangeOwner
+    builder.storeUint(1152761988, 32); // op code for ChangeOwner
     builder.storeAddress(message.newOwner);
     return builder.endCell();
   }
@@ -173,7 +208,9 @@ export class Nft {
     productName: string,
     productDescription: string,
     descriptionImageUrl: string,
-    productValue: bigint,
+    productStake: bigint,
+    productLocation: string,
+    productHourPrice: bigint,
     amount: bigint = toNano("0.05") // Default amount to send
   ) {
     // Create the InitNft message
@@ -183,24 +220,24 @@ export class Nft {
       productName,
       productDescription,
       descriptionImageUrl,
-      productValue,
+      productStake,
+      productLocation,
+      productHourPrice,
     };
 
     // Send the message to the contract
-    await this.send(
-      via,
-      { value: amount, bounce: false },
-      message
-    );
+    await this.send(via, { value: amount, bounce: false }, message);
   }
 
   // Method to update product properties
   async updateProductProperties(
     via: Sender,
-    productName: string | null,
-    productDescription: string | null,
-    descriptionImageUrl: string | null,
-    productValue: bigint | null,
+    productName?: string | null,
+    productDescription?: string | null,
+    descriptionImageUrl?: string | null,
+    productStake?: bigint | null,
+    productLocation?: string | null,
+    productHourPrice?: bigint | null,
     amount: bigint = toNano("0.02") // Default amount to send
   ) {
     // Create the UpdateProductProperties message
@@ -209,15 +246,13 @@ export class Nft {
       productName,
       productDescription,
       descriptionImageUrl,
-      productValue,
+      productStake,
+      productLocation,
+      productHourPrice,
     };
 
     // Send the message to the contract
-    await this.send(
-      via,
-      { value: amount, bounce: false },
-      message
-    );
+    await this.send(via, { value: amount, bounce: false }, message);
   }
 
   // Method to change owner
@@ -233,11 +268,7 @@ export class Nft {
     };
 
     // Send the message to the contract
-    await this.send(
-      via,
-      { value: amount, bounce: false },
-      message
-    );
+    await this.send(via, { value: amount, bounce: false }, message);
   }
 
   // Method to get NFT summary
@@ -245,38 +276,35 @@ export class Nft {
     await this.isDeployed();
 
     const result = await this.client.runMethod(this.address, "summary");
-		
+
     const stack = result.stack;
 
-		const summary = this.parseNftSummary(stack);
+    const summary = this.parseNftSummary(stack);
 
-		return summary;
+    return summary;
   }
 
   // Helper function to parse NftSummary from the stack
   private parseNftSummary(stack: any): NftSummary {
-    const reader = new TupleReader(stack.items);
+    const reader = stack;
 
     const owner = reader.readAddress();
-
-		const productName = reader.readString();
-
+    const productName = reader.readString();
     const productDescription = reader.readString();
-
-    const productValue = reader.readBigNumber();
-
+		const productStake = reader.readBigNumber();
     const descriptionImageUrl = reader.readString();
-
-    const productLocation = reader.readString();
+		const productLocation = reader.readString();
+    const productHourPrice = reader.readBigNumber();
 
     return {
       $$type: "NftSummary",
       owner,
+      productStake,
       productName,
       productDescription,
-      productValue,
       descriptionImageUrl,
-			productLocation
+      productHourPrice,
+      productLocation,
     };
   }
 
